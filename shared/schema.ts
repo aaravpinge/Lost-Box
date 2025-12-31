@@ -10,6 +10,7 @@ export const items = pgTable("items", {
   description: text("description").notNull(),
   location: text("location").notNull(),
   dateReported: timestamp("date_reported").defaultNow().notNull(),
+  dateLost: timestamp("date_lost"), // New field for when it was actually lost
   status: text("status").notNull().default("reported"), // 'reported', 'retrieved', 'donated'
   contactName: text("contact_name").notNull(),
   contactEmail: text("contact_email").notNull(),
