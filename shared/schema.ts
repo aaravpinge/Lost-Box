@@ -1,18 +1,42 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export * from "./models/auth";
+
+export const items = pgTable("items", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // 'lost' | 'found'
+  description: text("description").notNull(),
+  location: text("location").notNull(),
+  dateReported: timestamp("date_reported").defaultNow().notNull(),
+  status: text("status").notNull().default("reported"), // 'reported', 'retrieved', 'donated'
+  contactName: text("contact_name").notNull(),
+  contactEmail: text("contact_email").notNull(),
+  imageUrl: text("image_url"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertItemSchema = createInsertSchema(items).omit({ 
+  id: true, 
+  dateReported: true,
+  status: true 
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type Item = typeof items.$inferSelect;
+export type InsertItem = z.infer<typeof insertItemSchema>;
+
+export const LOCATIONS = [
+  "Classroom", 
+  "Cafeteria", 
+  "Gym", 
+  "Library", 
+  "Hallway", 
+  "Field", 
+  "Bus", 
+  "SLC", 
+  "Pool Patio", 
+  "North Quad", 
+  "South Quad", 
+  "PAV", 
+  "Other"
+] as const;
