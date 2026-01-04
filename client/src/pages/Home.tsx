@@ -51,8 +51,8 @@ export default function Home() {
           <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
             <h2 className="text-2xl font-display font-bold text-foreground">Community Items</h2>
             <TabsList className="bg-white border">
-              <TabsTrigger value="found" className="px-6">Found Items</TabsTrigger>
-              <TabsTrigger value="lost" className="px-6">Lost Reports</TabsTrigger>
+              <TabsTrigger value="found" className="px-6" data-testid="tab-found">Found Items</TabsTrigger>
+              <TabsTrigger value="lost" className="px-6" data-testid="tab-lost">Lost Reports</TabsTrigger>
             </TabsList>
           </div>
 
@@ -62,10 +62,10 @@ export default function Home() {
                 <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
                 <p className="text-muted-foreground">Searching the box...</p>
               </div>
-            ) : foundItems?.length === 0 ? (
+            ) : foundItems?.filter(item => item.type === 'found').length === 0 ? (
               <EmptyState title="No found items" message="Try adjusting your search terms or check back later." icon={<PackageOpen className="w-8 h-8 text-muted-foreground" />} />
             ) : (
-              <ItemGrid items={foundItems || []} />
+              <ItemGrid items={foundItems?.filter(item => item.type === 'found') || []} />
             )}
           </TabsContent>
 
@@ -75,10 +75,10 @@ export default function Home() {
                 <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
                 <p className="text-muted-foreground">Searching reports...</p>
               </div>
-            ) : lostItems?.length === 0 ? (
+            ) : lostItems?.filter(item => item.type === 'lost').length === 0 ? (
               <EmptyState title="No lost reports" message="No reports matching your search were found." icon={<HelpCircle className="w-8 h-8 text-muted-foreground" />} />
             ) : (
-              <ItemGrid items={lostItems || []} />
+              <ItemGrid items={lostItems?.filter(item => item.type === 'lost') || []} />
             )}
           </TabsContent>
         </Tabs>
