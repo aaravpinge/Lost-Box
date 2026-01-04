@@ -28,7 +28,7 @@ export class DatabaseStorage implements IStorage {
   async updateItemStatus(id: number, status: string, claimedBy?: string): Promise<Item | undefined> {
     const [item] = await db
       .update(items)
-      .set({ status, claimedBy: claimedBy || null })
+      .set({ status: status as any, claimedBy: claimedBy || null })
       .where(eq(items.id, id))
       .returning();
     return item;

@@ -27,7 +27,10 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
   };
 
   const handleClaim = () => {
-    updateStatus.mutate({ id: item.id, status: 'claimed' });
+    const name = window.prompt("Who is claiming this item?");
+    if (name) {
+      updateStatus.mutate({ id: item.id, status: 'claimed', claimedBy: name });
+    }
   };
 
   return (
@@ -95,12 +98,7 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
 
         {isFound && item.status === 'reported' && (
           <Button 
-            onClick={() => {
-              const name = window.prompt("Who is claiming this item?");
-              if (name) {
-                updateStatus.mutate({ id: item.id, status: 'claimed', claimedBy: name });
-              }
-            }}
+            onClick={handleClaim}
             disabled={updateStatus.isPending}
             className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
             data-testid={`button-claim-${item.id}`}
