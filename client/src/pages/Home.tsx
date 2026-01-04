@@ -11,9 +11,9 @@ export default function Home() {
   const { data: foundItems, isLoading: loadingFound } = useItems("found", search);
   const { data: lostItems, isLoading: loadingLost } = useItems("lost", search);
 
-  const claimedItems = foundItems?.filter(item => item.status === 'claimed') || [];
-  const availableFoundItems = foundItems?.filter(item => item.type === 'found' && item.status !== 'claimed') || [];
-  const activeLostItems = lostItems?.filter(item => item.type === 'lost' && item.status !== 'claimed') || [];
+  const claimedItems = foundItems?.filter(item => item.status === 'claimed' || item.status === 'retrieved') || [];
+  const availableFoundItems = foundItems?.filter(item => item.type === 'found' && item.status !== 'claimed' && item.status !== 'retrieved') || [];
+  const activeLostItems = lostItems?.filter(item => item.type === 'lost' && item.status !== 'claimed' && item.status !== 'retrieved') || [];
 
   return (
     <div className="min-h-screen bg-muted/30">

@@ -78,7 +78,7 @@ export function useUpdateItemStatus() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, status }: { id: number, status: 'reported' | 'retrieved' | 'donated' }) => {
+    mutationFn: async ({ id, status }: { id: number, status: 'reported' | 'retrieved' | 'donated' | 'claimed' }) => {
       const url = buildUrl(api.items.updateStatus.path, { id });
       const res = await fetch(url, {
         method: api.items.updateStatus.method,
