@@ -2,7 +2,7 @@ import { format, differenceInDays, addDays } from "date-fns";
 import { Item } from "@shared/schema";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Clock, ImageOff, CheckCircle2, Loader2 } from "lucide-react";
+import { MapPin, Calendar, Clock, ImageOff, CheckCircle2, Loader2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useUpdateItemStatus } from "@/hooks/use-items";
@@ -77,6 +77,10 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
         </h3>
         
         <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-primary/70" />
+            <span>{item.contactName}</span>
+          </div>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary/70" />
             <span>{item.location}</span>
