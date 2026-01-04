@@ -181,7 +181,12 @@ export function ReportForm({ type }: ReportFormProps) {
                   <FormLabel>Image URL (Optional)</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Input placeholder="https://..." {...field} className="h-12 pl-10" />
+                      <Input 
+                        placeholder="https://..." 
+                        {...field} 
+                        value={field.value || ""} 
+                        className="h-12 pl-10" 
+                      />
                       <Upload className="w-4 h-4 absolute left-3 top-4 text-muted-foreground" />
                     </div>
                   </FormControl>
