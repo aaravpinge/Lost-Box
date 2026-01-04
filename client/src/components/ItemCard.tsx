@@ -2,7 +2,7 @@ import { format, differenceInDays, addDays } from "date-fns";
 import { Item } from "@shared/schema";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Clock, ImageOff, CheckCircle2 } from "lucide-react";
+import { MapPin, Calendar, Clock, ImageOff, CheckCircle2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useUpdateItemStatus } from "@/hooks/use-items";
