@@ -16,6 +16,7 @@ export const items = pgTable("items", {
   contactName: text("contact_name").notNull(),
   contactEmail: text("contact_email").notNull(),
   imageUrl: text("image_url"),
+  claimedBy: text("claimed_by"), // New field to track who claimed the item
 });
 
 export const insertItemSchema = createInsertSchema(items).omit({ 

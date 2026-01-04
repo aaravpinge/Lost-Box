@@ -49,6 +49,7 @@ export const api = {
       path: '/api/items/:id/status',
       input: z.object({
         status: z.enum(['reported', 'retrieved', 'donated', 'claimed']),
+        claimedBy: z.string().optional(),
       }),
       responses: {
         200: z.custom<typeof items.$inferSelect>(),

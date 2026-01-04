@@ -6,7 +6,7 @@ export interface IStorage {
   getItems(): Promise<Item[]>;
   getItem(id: number): Promise<Item | undefined>;
   createItem(item: InsertItem): Promise<Item>;
-  updateItemStatus(id: number, status: string): Promise<Item | undefined>;
+  updateItemStatus(id: number, status: string, claimedBy?: string): Promise<Item | undefined>;
   deleteItem(id: number): Promise<void>;
 }
 
@@ -25,10 +25,10 @@ export class DatabaseStorage implements IStorage {
     return item;
   }
 
-  async updateItemStatus(id: number, status: string): Promise<Item | undefined> {
+  async updateItemStatus(id: number, status: string, claimedBy?: string): Promise<Item | undefined> {
     const [item] = await db
       .update(items)
-      .set({ status })
+      .set({ status, claimedBy: claimedBy || null })
       .where(eq(items.id, id))
       .returning();
     return item;

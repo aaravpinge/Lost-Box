@@ -79,7 +79,7 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-primary/70" />
-            <span>{item.contactName}</span>
+            <span>{item.status === 'claimed' ? `Claimed by: ${item.claimedBy || 'Unknown'}` : item.contactName}</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary/70" />
@@ -95,7 +95,12 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
 
         {isFound && item.status === 'reported' && (
           <Button 
-            onClick={handleClaim}
+            onClick={() => {
+              const name = window.prompt("Who is claiming this item?");
+              if (name) {
+                updateStatus.mutate({ id: item.id, status: 'claimed', claimedBy: name });
+              }
+            }}
             disabled={updateStatus.isPending}
             className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
             data-testid={`button-claim-${item.id}`}

@@ -42,8 +42,8 @@ export async function registerRoutes(
 
   app.patch(api.items.updateStatus.path, async (req, res) => {
     try {
-      const { status } = req.body;
-      const item = await storage.updateItemStatus(Number(req.params.id), status);
+      const { status, claimedBy } = req.body;
+      const item = await storage.updateItemStatus(Number(req.params.id), status, claimedBy);
       if (!item) {
         return res.status(404).json({ message: "Item not found" });
       }

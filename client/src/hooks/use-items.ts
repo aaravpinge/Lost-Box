@@ -78,12 +78,12 @@ export function useUpdateItemStatus() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, status }: { id: number, status: 'reported' | 'retrieved' | 'donated' | 'claimed' }) => {
+    mutationFn: async ({ id, status, claimedBy }: { id: number, status: 'reported' | 'retrieved' | 'donated' | 'claimed', claimedBy?: string }) => {
       const url = buildUrl(api.items.updateStatus.path, { id });
       const res = await fetch(url, {
         method: api.items.updateStatus.method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, claimedBy }),
         credentials: "include",
       });
 
