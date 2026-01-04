@@ -18,7 +18,10 @@ export const items = pgTable("items", {
   imageUrl: text("image_url"),
 });
 
-export const insertItemSchema = createInsertSchema(items).omit({ 
+export const insertItemSchema = createInsertSchema(items, {
+  dateLost: z.coerce.date().optional(),
+  dateFound: z.coerce.date().optional(),
+}).omit({ 
   id: true, 
   dateReported: true,
   status: true 
