@@ -60,7 +60,7 @@ export function ItemCard({ item }: ItemCardProps) {
           </Badge>
           <span className="text-xs text-muted-foreground flex items-center ml-auto">
             <Calendar className="w-3 h-3 mr-1" />
-            {format(new Date(item.dateReported), "MMM d, yyyy")}
+            {format(new Date(isFound ? item.dateFound || item.dateReported : item.dateLost || item.dateReported), "MMM d, yyyy")}
           </span>
         </div>
 

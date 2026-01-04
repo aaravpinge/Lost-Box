@@ -2,12 +2,16 @@ import { useState } from "react";
 import { useItems } from "@/hooks/use-items";
 import { ItemCard } from "@/components/ItemCard";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, PackageOpen } from "lucide-react";
+import { Search, Loader2, PackageOpen, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   const [search, setSearch] = useState("");
-  const { data: items, isLoading } = useItems("found", search);
+  const { data: foundItems, isLoading: loadingFound } = useItems("found", search);
+  const { data: lostItems, isLoading: loadingLost } = useItems("lost", search);
+
+  const isLoading = loadingFound || loadingLost;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -22,7 +26,7 @@ export default function Home() {
             </h1>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
               The Lost Box system helps connect lost items with their owners. 
-              Search through the found items database below or report a new lost item.
+              Search through the database below or report a new lost/found item.
             </p>
             
             <div className="relative max-w-xl mx-auto transform transition-all hover:scale-105 duration-300">
@@ -31,7 +35,7 @@ export default function Home() {
               </div>
               <Input
                 type="text"
-                placeholder="Search found items (e.g., 'Hydro Flask', 'Calculator')..."
+                placeholder="Search items (e.g., 'Hydro Flask', 'Calculator')..."
                 className="pl-12 h-14 text-lg rounded-2xl border-2 border-primary/10 shadow-lg shadow-primary/5 focus:border-primary focus:ring-4 focus:ring-primary/10 bg-white"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -43,47 +47,77 @@ export default function Home() {
 
       {/* Results Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-display font-bold text-foreground">Recently Found Items</h2>
-          <span className="text-sm text-muted-foreground bg-white px-3 py-1 rounded-full border shadow-sm">
-            {items?.length || 0} items found
-          </span>
-        </div>
+        <Tabs defaultValue="found" className="w-full">
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+            <h2 className="text-2xl font-display font-bold text-foreground">Community Items</h2>
+            <TabsList className="bg-white border">
+              <TabsTrigger value="found" className="px-6">Found Items</TabsTrigger>
+              <TabsTrigger value="lost" className="px-6">Lost Reports</TabsTrigger>
+            </TabsList>
+          </div>
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-            <p className="text-muted-foreground">Searching the box...</p>
-          </div>
-        ) : items?.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-border">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <PackageOpen className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-medium text-foreground mb-2">No items found</h3>
-            <p className="text-muted-foreground">Try adjusting your search terms or check back later.</p>
-          </div>
-        ) : (
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {items?.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4 }}
-              >
-                <ItemCard item={item} />
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+          <TabsContent value="found">
+            {loadingFound ? (
+              <div className="flex flex-col items-center justify-center py-24">
+                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                <p className="text-muted-foreground">Searching the box...</p>
+              </div>
+            ) : foundItems?.length === 0 ? (
+              <EmptyState title="No found items" message="Try adjusting your search terms or check back later." icon={<PackageOpen className="w-8 h-8 text-muted-foreground" />} />
+            ) : (
+              <ItemGrid items={foundItems || []} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="lost">
+            {loadingLost ? (
+              <div className="flex flex-col items-center justify-center py-24">
+                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                <p className="text-muted-foreground">Searching reports...</p>
+              </div>
+            ) : lostItems?.length === 0 ? (
+              <EmptyState title="No lost reports" message="No reports matching your search were found." icon={<HelpCircle className="w-8 h-8 text-muted-foreground" />} />
+            ) : (
+              <ItemGrid items={lostItems || []} />
+            )}
+          </TabsContent>
+        </Tabs>
       </section>
     </div>
+  );
+}
+
+function EmptyState({ title, message, icon }: { title: string, message: string, icon: React.ReactNode }) {
+  return (
+    <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-border">
+      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+        {icon}
+      </div>
+      <h3 className="text-xl font-medium text-foreground mb-2">{title}</h3>
+      <p className="text-muted-foreground">{message}</p>
+    </div>
+  );
+}
+
+function ItemGrid({ items }: { items: any[] }) {
+  return (
+    <motion.div 
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {items.map((item) => (
+        <motion.div
+          key={item.id}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4 }}
+        >
+          <ItemCard item={item} />
+        </motion.div>
+      ))}
+    </motion.div>
   );
 }

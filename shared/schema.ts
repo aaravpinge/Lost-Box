@@ -10,7 +10,8 @@ export const items = pgTable("items", {
   description: text("description").notNull(),
   location: text("location").notNull(),
   dateReported: timestamp("date_reported").defaultNow().notNull(),
-  dateOccurred: timestamp("date_occurred"), // Generic field for 'date lost' or 'date found'
+  dateLost: timestamp("date_lost"), // When it was lost
+  dateFound: timestamp("date_found"), // When it was found
   status: text("status").notNull().default("reported"), // 'reported', 'retrieved', 'donated'
   contactName: text("contact_name").notNull(),
   contactEmail: text("contact_email").notNull(),
@@ -21,6 +22,9 @@ export const insertItemSchema = createInsertSchema(items).omit({
   id: true, 
   dateReported: true,
   status: true 
+}).extend({
+  dateLost: z.string().optional().nullable(),
+  dateFound: z.string().optional().nullable(),
 });
 
 export type Item = typeof items.$inferSelect;
