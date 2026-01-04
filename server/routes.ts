@@ -41,10 +41,6 @@ export async function registerRoutes(
   });
 
   app.patch(api.items.updateStatus.path, async (req, res) => {
-    if (!req.isAuthenticated()) {
-       return res.status(401).json({ message: "Unauthorized" });
-    }
-    
     try {
       const { status } = req.body;
       const item = await storage.updateItemStatus(Number(req.params.id), status);

@@ -2,24 +2,31 @@ import { format, differenceInDays, addDays } from "date-fns";
 import { Item } from "@shared/schema";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Clock, ImageOff } from "lucide-react";
+import { MapPin, Calendar, Clock, ImageOff, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useUpdateItemStatus } from "@/hooks/use-items";
 
 interface ItemCardProps {
   item: Item;
   showAdminControls?: boolean;
 }
 
-export function ItemCard({ item }: ItemCardProps) {
+export function ItemCard({ item, showAdminControls }: ItemCardProps) {
   const isFound = item.type === "found";
   const deadline = addDays(new Date(item.dateReported), 30);
   const daysLeft = differenceInDays(deadline, new Date());
+  const updateStatus = useUpdateItemStatus();
   
   // Status color mapping
   const statusColors = {
     reported: "bg-blue-100 text-blue-700 hover:bg-blue-100/80",
     retrieved: "bg-green-100 text-green-700 hover:bg-green-100/80",
     donated: "bg-amber-100 text-amber-700 hover:bg-amber-100/80"
+  };
+
+  const handleClaim = () => {
+    updateStatus.mutate({ id: item.id, status: 'retrieved' });
   };
 
   return (
@@ -73,13 +80,29 @@ export function ItemCard({ item }: ItemCardProps) {
             <MapPin className="w-4 h-4 text-primary/70" />
             <span>{item.location}</span>
           </div>
-          {isFound && (
+          {isFound && item.status === 'reported' && (
             <div className="flex items-center gap-2 text-amber-600/90 font-medium">
               <Clock className="w-4 h-4" />
               <span>Donation Deadline: {format(deadline, "MMM d")}</span>
             </div>
           )}
         </div>
+
+        {isFound && item.status === 'reported' && (
+          <Button 
+            onClick={handleClaim}
+            disabled={updateStatus.isPending}
+            className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
+            data-testid={`button-claim-${item.id}`}
+          >
+            {updateStatus.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 mr-2" />
+            )}
+            Claim Item
+          </Button>
+        )}
       </div>
     </Card>
   );
