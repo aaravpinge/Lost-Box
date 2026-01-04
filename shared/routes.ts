@@ -48,7 +48,7 @@ export const api = {
       method: 'PATCH' as const,
       path: '/api/items/:id/status',
       input: z.object({
-        status: z.enum(['reported', 'retrieved', 'donated']),
+        status: z.enum(['reported', 'retrieved', 'donated', 'claimed']),
       }),
       responses: {
         200: z.custom<typeof items.$inferSelect>(),

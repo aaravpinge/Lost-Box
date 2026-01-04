@@ -22,11 +22,12 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
   const statusColors = {
     reported: "bg-blue-100 text-blue-700 hover:bg-blue-100/80",
     retrieved: "bg-green-100 text-green-700 hover:bg-green-100/80",
-    donated: "bg-amber-100 text-amber-700 hover:bg-amber-100/80"
+    donated: "bg-amber-100 text-amber-700 hover:bg-amber-100/80",
+    claimed: "bg-purple-100 text-purple-700 hover:bg-purple-100/80"
   };
 
   const handleClaim = () => {
-    updateStatus.mutate({ id: item.id, status: 'retrieved' });
+    updateStatus.mutate({ id: item.id, status: 'claimed' });
   };
 
   return (

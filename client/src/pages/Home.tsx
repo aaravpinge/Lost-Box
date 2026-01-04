@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useItems } from "@/hooks/use-items";
 import { ItemCard } from "@/components/ItemCard";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, PackageOpen, HelpCircle } from "lucide-react";
+import { Search, Loader2, PackageOpen, HelpCircle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -11,7 +11,9 @@ export default function Home() {
   const { data: foundItems, isLoading: loadingFound } = useItems("found", search);
   const { data: lostItems, isLoading: loadingLost } = useItems("lost", search);
 
-  const isLoading = loadingFound || loadingLost;
+  const claimedItems = foundItems?.filter(item => item.status === 'claimed') || [];
+  const availableFoundItems = foundItems?.filter(item => item.type === 'found' && item.status !== 'claimed') || [];
+  const activeLostItems = lostItems?.filter(item => item.type === 'lost' && item.status !== 'claimed') || [];
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -53,6 +55,7 @@ export default function Home() {
             <TabsList className="bg-white border">
               <TabsTrigger value="found" className="px-6" data-testid="tab-found">Found Items</TabsTrigger>
               <TabsTrigger value="lost" className="px-6" data-testid="tab-lost">Lost Reports</TabsTrigger>
+              <TabsTrigger value="claimed" className="px-6" data-testid="tab-claimed">Claimed Items</TabsTrigger>
             </TabsList>
           </div>
 
@@ -62,10 +65,10 @@ export default function Home() {
                 <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
                 <p className="text-muted-foreground">Searching the box...</p>
               </div>
-            ) : foundItems?.filter(item => item.type === 'found').length === 0 ? (
+            ) : availableFoundItems.length === 0 ? (
               <EmptyState title="No found items" message="Try adjusting your search terms or check back later." icon={<PackageOpen className="w-8 h-8 text-muted-foreground" />} />
             ) : (
-              <ItemGrid items={foundItems?.filter(item => item.type === 'found') || []} />
+              <ItemGrid items={availableFoundItems} />
             )}
           </TabsContent>
 
@@ -75,10 +78,23 @@ export default function Home() {
                 <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
                 <p className="text-muted-foreground">Searching reports...</p>
               </div>
-            ) : lostItems?.filter(item => item.type === 'lost').length === 0 ? (
+            ) : activeLostItems.length === 0 ? (
               <EmptyState title="No lost reports" message="No reports matching your search were found." icon={<HelpCircle className="w-8 h-8 text-muted-foreground" />} />
             ) : (
-              <ItemGrid items={lostItems?.filter(item => item.type === 'lost') || []} />
+              <ItemGrid items={activeLostItems} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="claimed">
+            {loadingFound ? (
+              <div className="flex flex-col items-center justify-center py-24">
+                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                <p className="text-muted-foreground">Loading claimed items...</p>
+              </div>
+            ) : claimedItems.length === 0 ? (
+              <EmptyState title="No claimed items" message="Items will appear here once they've been claimed." icon={<CheckCircle2 className="w-8 h-8 text-muted-foreground" />} />
+            ) : (
+              <ItemGrid items={claimedItems} />
             )}
           </TabsContent>
         </Tabs>
