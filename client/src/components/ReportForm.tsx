@@ -207,24 +207,39 @@ export function ReportForm({ type }: ReportFormProps) {
                   <FormControl>
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          disabled={isUploading}
-                          className="h-12 cursor-pointer pt-2"
-                        />
-                        {isUploading && (
-                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                        )}
+                        <div className="relative flex-1">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={isUploading}
+                            className="h-12 cursor-pointer pt-2 pr-10"
+                          />
+                          <div className="absolute right-3 top-3">
+                            {isUploading ? (
+                              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                            ) : (
+                              <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                            )}
+                          </div>
+                        </div>
                       </div>
                       {field.value && (
-                        <div className="relative aspect-video rounded-xl overflow-hidden border">
+                        <div className="relative group aspect-video rounded-xl overflow-hidden border bg-muted">
                           <img 
                             src={field.value} 
                             alt="Preview" 
-                            className="object-cover w-full h-full"
+                            className="object-contain w-full h-full"
                           />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => form.setValue("imageUrl", "")}
+                          >
+                            Remove
+                          </Button>
                         </div>
                       )}
                     </div>
