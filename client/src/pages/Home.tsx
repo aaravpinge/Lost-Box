@@ -51,7 +51,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Tabs defaultValue="found" className="w-full">
           <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-            <h2 className="text-2xl font-display font-bold text-foreground">Community Items</h2>
+            <h2 className="text-2xl font-display font-bold text-foreground">Dashboard</h2>
             <TabsList className="bg-white border">
               <TabsTrigger value="found" className="px-6" data-testid="tab-found">Found Items</TabsTrigger>
               <TabsTrigger value="lost" className="px-6" data-testid="tab-lost">Lost Reports</TabsTrigger>
