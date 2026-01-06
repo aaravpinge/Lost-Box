@@ -16,32 +16,35 @@ export default function Home() {
   const activeLostItems = lostItems?.filter(item => item.type === 'lost' && item.status !== 'claimed' && item.status !== 'retrieved') || [];
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero Section */}
       <section className="relative bg-white border-b overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black text-slate-900 mb-6 tracking-tight leading-tight">
               Lost something? <br />
-              <span className="text-primary">Let's help you find it.</span>
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Let's help you find it.</span>
             </h1>
-            <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
               The Lost Box system helps connect lost items with their owners. 
               Search through the database below or report a new lost/found item.
             </p>
             
-            <div className="relative max-w-xl mx-auto transform transition-all hover:scale-105 duration-300">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-6 w-6 text-primary/50" />
+            <div className="relative max-w-xl mx-auto group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-6 w-6 text-slate-400" />
+                </div>
+                <Input
+                  type="text"
+                  placeholder="Search items (e.g., 'Hydro Flask', 'Calculator')..."
+                  className="pl-12 h-14 text-lg rounded-2xl border-none shadow-xl focus:ring-4 focus:ring-blue-500/10 bg-white"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               </div>
-              <Input
-                type="text"
-                placeholder="Search items (e.g., 'Hydro Flask', 'Calculator')..."
-                className="pl-12 h-14 text-lg rounded-2xl border-2 border-primary/10 shadow-lg shadow-primary/5 focus:border-primary focus:ring-4 focus:ring-primary/10 bg-white"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
             </div>
           </div>
         </div>
@@ -50,12 +53,15 @@ export default function Home() {
       {/* Results Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Tabs defaultValue="found" className="w-full">
-          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-            <h2 className="text-2xl font-display font-bold text-foreground">Dashboard</h2>
-            <TabsList className="bg-white border">
-              <TabsTrigger value="found" className="px-6" data-testid="tab-found">Found Items</TabsTrigger>
-              <TabsTrigger value="lost" className="px-6" data-testid="tab-lost">Lost Reports</TabsTrigger>
-              <TabsTrigger value="claimed" className="px-6" data-testid="tab-claimed">Claimed Items</TabsTrigger>
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-4 bg-white p-4 rounded-2xl border shadow-sm">
+            <h2 className="text-2xl font-display font-black text-slate-900 flex items-center gap-2">
+              <div className="w-2 h-8 bg-blue-600 rounded-full"></div>
+              Dashboard
+            </h2>
+            <TabsList className="bg-slate-100 p-1 rounded-xl h-auto">
+              <TabsTrigger value="found" className="px-6 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all" data-testid="tab-found">Found Items</TabsTrigger>
+              <TabsTrigger value="lost" className="px-6 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all" data-testid="tab-lost">Lost Reports</TabsTrigger>
+              <TabsTrigger value="claimed" className="px-6 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-purple-600 data-[state=active]:shadow-sm transition-all" data-testid="tab-claimed">Claimed Items</TabsTrigger>
             </TabsList>
           </div>
 

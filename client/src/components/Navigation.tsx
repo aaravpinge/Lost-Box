@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 export function Navigation() {
   const [location] = useLocation();
-  const { user } = useUser();
+  const { data: user } = useUser();
   const { logout } = useAuth(); // Assuming this exists or using simple redirect
 
   const isActive = (path: string) => location === path;
