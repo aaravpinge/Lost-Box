@@ -89,10 +89,12 @@ export function ReportForm({ type }: ReportFormProps) {
                           <SelectValue placeholder="Select location" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent position="popper" sideOffset={5} className="bg-slate-900 text-white border-slate-800" align="start" side="bottom">
-                        {LOCATIONS.map((loc) => (
-                          <SelectItem key={loc} value={loc} className="focus:bg-slate-800 focus:text-white cursor-pointer">{loc}</SelectItem>
-                        ))}
+                      <SelectContent position="popper" sideOffset={5} className="bg-slate-900 text-white border-slate-800" side="bottom" align="start">
+                        <div className="max-h-[200px] overflow-y-auto">
+                          {LOCATIONS.map((loc) => (
+                            <SelectItem key={loc} value={loc} className="focus:bg-slate-800 focus:text-white cursor-pointer">{loc}</SelectItem>
+                          ))}
+                        </div>
                       </SelectContent>
                     </Select>
                     <FormMessage />
