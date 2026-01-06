@@ -44,7 +44,7 @@ export function Navigation() {
                     ? "bg-primary/10 text-primary" 
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}>
-                  Report Lost
+                  Report Lost Items
                 </a>
               </Link>
               <Link href="/report/found">
@@ -54,7 +54,7 @@ export function Navigation() {
                     ? "bg-primary/10 text-primary" 
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}>
-                  Report Found
+                  Report Found Items
                 </a>
               </Link>
             </div>

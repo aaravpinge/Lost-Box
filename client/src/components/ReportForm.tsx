@@ -65,7 +65,7 @@ export function ReportForm({ type }: ReportFormProps) {
     <Card className="max-w-2xl mx-auto border-none shadow-xl shadow-black/5 bg-white/80 backdrop-blur-sm">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-display text-primary">
-          Report {type === "lost" ? "Lost" : "Found"} Item
+          Report {type === "lost" ? "Lost" : "Found"} Items
         </CardTitle>
         <CardDescription>
           Please provide details to help us {type === "lost" ? "locate your item" : "return this item to its owner"}.
@@ -260,7 +260,7 @@ export function ReportForm({ type }: ReportFormProps) {
                   Submitting...
                 </>
               ) : (
-                `Submit ${type === "lost" ? "Lost" : "Found"} Report`
+                `Submit ${type === "lost" ? "Lost" : "Found"} Items Report`
               )}
             </Button>
           </form>
