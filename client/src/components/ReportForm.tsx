@@ -8,12 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Upload, CalendarIcon } from "lucide-react";
+import { Loader2, CalendarIcon, Image as ImageIcon } from "lucide-react";
 import { z } from "zod";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useUpload } from "@/hooks/use-upload";
 
 interface ReportFormProps {
   type: "lost" | "found";
@@ -26,6 +27,7 @@ const formSchema = insertItemSchema.extend({
 
 export function ReportForm({ type }: ReportFormProps) {
   const { mutate, isPending } = useCreateItem();
+  const { uploadFile, isUploading } = useUpload();
   
   const form = useForm<InsertItem>({
     resolver: zodResolver(formSchema),
@@ -47,6 +49,16 @@ export function ReportForm({ type }: ReportFormProps) {
         form.reset();
       }
     });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const response = await uploadFile(file);
+      if (response) {
+        form.setValue("imageUrl", response.objectPath);
+      }
+    }
   };
 
   return (
@@ -191,16 +203,30 @@ export function ReportForm({ type }: ReportFormProps) {
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image URL (Optional)</FormLabel>
+                  <FormLabel>Item Photo</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input 
-                        placeholder="https://..." 
-                        {...field} 
-                        value={field.value || ""} 
-                        className="h-12 pl-10" 
-                      />
-                      <Upload className="w-4 h-4 absolute left-3 top-4 text-muted-foreground" />
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={isUploading}
+                          className="h-12 cursor-pointer pt-2"
+                        />
+                        {isUploading && (
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                        )}
+                      </div>
+                      {field.value && (
+                        <div className="relative aspect-video rounded-xl overflow-hidden border">
+                          <img 
+                            src={field.value} 
+                            alt="Preview" 
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+                      )}
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -211,7 +237,7 @@ export function ReportForm({ type }: ReportFormProps) {
             <Button 
               type="submit" 
               className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25"
-              disabled={isPending}
+              disabled={isPending || isUploading}
             >
               {isPending ? (
                 <>
