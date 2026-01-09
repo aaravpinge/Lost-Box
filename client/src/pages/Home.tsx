@@ -60,7 +60,7 @@ export default function Home() {
             </h2>
             <TabsList className="bg-slate-100 p-1 rounded-xl h-auto">
               <TabsTrigger value="found" className="px-6 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all" data-testid="tab-found">Found Items</TabsTrigger>
-              <TabsTrigger value="lost" className="px-6 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all" data-testid="tab-lost">Lost Reports</TabsTrigger>
+              <TabsTrigger value="lost" className="px-6 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all" data-testid="tab-lost">Lost Items</TabsTrigger>
               <TabsTrigger value="claimed" className="px-6 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-purple-600 data-[state=active]:shadow-sm transition-all" data-testid="tab-claimed">Claimed Items</TabsTrigger>
             </TabsList>
           </div>

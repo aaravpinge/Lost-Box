@@ -100,7 +100,7 @@ export function Navigation() {
         <Link href="/report/lost">
           <a className={cn("flex flex-col items-center p-2 rounded-md", isActive("/report/lost") ? "text-primary" : "text-muted-foreground")}>
             <PackageSearch className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-medium">Lost</span>
+            <span className="text-[10px] font-medium">Lost Items</span>
           </a>
         </Link>
         <Link href="/report/found">
