@@ -21,9 +21,7 @@ interface ReportFormProps {
 }
 
 // Extend schema for frontend validation
-const formSchema = insertItemSchema.extend({
-  imageUrl: z.string().optional(),
-});
+const formSchema = insertItemSchema;
 
 export function ReportForm({ type }: ReportFormProps) {
   const { mutate, isPending } = useCreateItem();

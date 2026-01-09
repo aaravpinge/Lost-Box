@@ -24,8 +24,13 @@ export const insertItemSchema = createInsertSchema(items).omit({
   dateReported: true,
   status: true 
 }).extend({
-  dateLost: z.string().optional().nullable(),
-  dateFound: z.string().optional().nullable(),
+  description: z.string().min(1, "Description is required"),
+  location: z.string().min(1, "Location is required"),
+  contactName: z.string().min(1, "Name is required"),
+  contactEmail: z.string().email("Invalid email address").min(1, "Email is required"),
+  dateLost: z.string().min(1, "Date is required").nullable(),
+  dateFound: z.string().min(1, "Date is required").nullable(),
+  imageUrl: z.string().optional().nullable(),
 });
 
 export type Item = typeof items.$inferSelect;
