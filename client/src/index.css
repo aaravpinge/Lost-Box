@@ -8,14 +8,14 @@
   --font-body: 'DM Sans', sans-serif;
   --font-display: 'Space Grotesk', sans-serif;
 
-  /* Premium School Palette: Deep Navy & Gold with Clean Neutrals */
+  /* Brentwood School Palette: Deep Navy & Gold */
   --background: 210 20% 98%;
   --foreground: 222 47% 11%;
 
-  --primary: 221 83% 53%; /* Bright Blue */
+  --primary: 214 100% 34%; /* Deep Brentwood Blue #0055A4-ish */
   --primary-foreground: 210 40% 98%;
 
-  --secondary: 47 95% 55%; /* Gold/Yellow for Found items */
+  --secondary: 47 95% 55%; /* Golden Yellow #FFD700-ish */
   --secondary-foreground: 222 47% 11%;
 
   --muted: 210 40% 96%;

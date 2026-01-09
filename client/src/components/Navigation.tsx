@@ -4,6 +4,7 @@ import { PackageSearch, Search, PlusCircle, LayoutDashboard, LogIn, LogOut } fro
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import schoolLogo from "@assets/school_logo_1767939229083.png";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -17,11 +18,11 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-              <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                <PackageSearch className="w-6 h-6 text-primary" />
+            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+              <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-100 shadow-sm group-hover:border-primary/20 transition-colors">
+                <img src={schoolLogo} alt="School Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="font-display font-bold text-xl tracking-tight text-foreground">
+              <span className="font-display font-black text-xl tracking-tight text-slate-900">
                 Lost Box
               </span>
             </Link>
