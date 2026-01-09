@@ -19,14 +19,14 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero Section */}
       <section className="relative bg-primary border-b overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black text-white mb-6 tracking-tighter leading-[1.1]">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black text-white mb-4 tracking-tighter leading-[1.1]">
                 Lost something? <br />
                 <span className="italic opacity-90">Let's find it.</span>
               </h1>
@@ -35,26 +35,74 @@ export default function Home() {
               </p>
             </motion.div>
             
-            <motion.div 
-              className="relative max-w-xl mx-auto group"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-            >
-              <div className="absolute -inset-1.5 bg-white/20 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                  <Search className="h-6 w-6 text-primary" />
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-10">
+              <motion.div 
+                className="relative flex-1 max-w-xl group w-full"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+              >
+                <div className="absolute -inset-1.5 bg-white/20 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                    <Search className="h-6 w-6 text-primary" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="Search for your item..."
+                    className="pl-14 h-14 text-lg rounded-2xl border-none shadow-2xl focus:ring-4 focus:ring-white/20 bg-white placeholder:text-slate-400"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                 </div>
-                <Input
-                  type="text"
-                  placeholder="Search for your item..."
-                  className="pl-14 h-14 text-lg rounded-2xl border-none shadow-2xl focus:ring-4 focus:ring-white/20 bg-white placeholder:text-slate-400"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+              </motion.div>
+
+              <div className="flex gap-4 w-full md:w-auto">
+                <div className="flex-1 md:w-32 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center">
+                  <div className="text-2xl font-black text-white leading-none">{(availableFoundItems.length + activeLostItems.length)}</div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mt-1">Total Items</div>
+                </div>
+                <div className="flex-1 md:w-32 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center">
+                  <div className="text-2xl font-black text-white leading-none">{claimedItems.length}</div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mt-1">Returned</div>
+                </div>
               </div>
-            </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
+                <Search className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 mb-1">Search</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">Check the dashboard to see if your lost item was found.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
+                <HelpCircle className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 mb-1">Report</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">Can't find it? Submit a report so others can help you look.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 mb-1">Claim</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">Found a match? Claim it and pick it up from the office.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -83,7 +131,12 @@ export default function Home() {
                 <p className="text-muted-foreground">Searching the box...</p>
               </div>
             ) : availableFoundItems.length === 0 ? (
-              <EmptyState title="No found items" message="Try adjusting your search terms or check back later." icon={<PackageOpen className="w-8 h-8 text-muted-foreground" />} />
+              <EmptyState 
+                title="No found items" 
+                message="Try searching for something else or check back later if you lost something." 
+                icon={<PackageOpen className="w-10 h-10" />} 
+                type="found"
+              />
             ) : (
               <ItemGrid items={availableFoundItems} />
             )}
@@ -96,7 +149,12 @@ export default function Home() {
                 <p className="text-muted-foreground">Searching reports...</p>
               </div>
             ) : activeLostItems.length === 0 ? (
-              <EmptyState title="No lost reports" message="No reports matching your search were found." icon={<HelpCircle className="w-8 h-8 text-muted-foreground" />} />
+              <EmptyState 
+                title="No lost reports" 
+                message="If you found something, please report it to help its owner find it." 
+                icon={<HelpCircle className="w-10 h-10" />} 
+                type="lost"
+              />
             ) : (
               <ItemGrid items={activeLostItems} />
             )}
@@ -120,14 +178,21 @@ export default function Home() {
   );
 }
 
-function EmptyState({ title, message, icon }: { title: string, message: string, icon: React.ReactNode }) {
+function EmptyState({ title, message, icon, type }: { title: string, message: string, icon: React.ReactNode, type?: 'found' | 'lost' }) {
   return (
-    <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-border">
-      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+    <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-100 flex flex-col items-center">
+      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6 text-slate-400">
         {icon}
       </div>
-      <h3 className="text-xl font-medium text-foreground mb-2">{title}</h3>
-      <p className="text-muted-foreground">{message}</p>
+      <h3 className="text-2xl font-display font-black text-slate-900 mb-2">{title}</h3>
+      <p className="text-slate-500 max-w-xs mx-auto mb-8 font-medium leading-relaxed">{message}</p>
+      {type && (
+        <Link href={type === 'found' ? "/report/found" : "/report/lost"}>
+          <Button className="rounded-xl px-8 h-12 font-bold shadow-lg shadow-primary/20">
+            Report {type === 'found' ? "Found" : "Lost"} Item
+          </Button>
+        </Link>
+      )}
     </div>
   );
 }
