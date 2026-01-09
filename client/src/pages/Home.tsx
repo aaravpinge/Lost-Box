@@ -24,24 +24,24 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(0,85,164,0.1),transparent_50%)]" />
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black text-white mb-8 tracking-tighter leading-[1.1]">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black text-white mb-6 tracking-tighter leading-[1.1]">
                 Lost something? <br />
                 <span className="bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent italic">Let's find it.</span>
               </h1>
-              <p className="text-xl text-blue-100/80 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
-                The official Brentwood School Lost Box. Connecting lost items with their owners through a modern, efficient tracking system.
+              <p className="text-lg text-blue-100/80 mb-8 max-w-2xl mx-auto leading-relaxed font-medium">
+                The official Brentwood School Lost Box.
               </p>
             </motion.div>
             
             <motion.div 
-              className="relative max-w-2xl mx-auto group"
+              className="relative max-w-xl mx-auto group"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
@@ -53,8 +53,8 @@ export default function Home() {
                 </div>
                 <Input
                   type="text"
-                  placeholder="Search for your item (e.g., 'Hydro Flask', 'Pencil Case')..."
-                  className="pl-14 h-16 text-xl rounded-2xl border-none shadow-2xl focus:ring-4 focus:ring-blue-500/20 bg-white placeholder:text-slate-400"
+                  placeholder="Search for your item..."
+                  className="pl-14 h-14 text-lg rounded-2xl border-none shadow-2xl focus:ring-4 focus:ring-blue-500/20 bg-white placeholder:text-slate-400"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -65,20 +65,19 @@ export default function Home() {
       </section>
 
       {/* Results Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="found" className="w-full">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6 bg-white p-6 rounded-3xl border shadow-xl shadow-blue-900/5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6 bg-white p-5 rounded-3xl border shadow-xl shadow-blue-900/5">
             <div>
-              <h2 className="text-3xl font-display font-black text-slate-900 flex items-center gap-3">
-                <div className="w-3 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(0,85,164,0.3)]"></div>
+              <h2 className="text-2xl font-display font-black text-slate-900 flex items-center gap-3">
+                <div className="w-2.5 h-8 bg-primary rounded-full shadow-[0_0_15px_rgba(0,85,164,0.3)]"></div>
                 Dashboard
               </h2>
-              <p className="text-slate-500 text-sm mt-1 ml-6 font-medium">Browse reported items by status</p>
             </div>
             <TabsList className="bg-slate-100/80 p-1.5 rounded-2xl h-auto border border-slate-200/50">
-              <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-sm" data-testid="tab-found">Found Items</TabsTrigger>
-              <TabsTrigger value="lost" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-sm" data-testid="tab-lost">Lost Items</TabsTrigger>
-              <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-sm" data-testid="tab-claimed">Claimed Items</TabsTrigger>
+              <TabsTrigger value="found" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-xs" data-testid="tab-found">Found Items</TabsTrigger>
+              <TabsTrigger value="lost" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-xs" data-testid="tab-lost">Lost Items</TabsTrigger>
+              <TabsTrigger value="claimed" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-xs" data-testid="tab-claimed">Claimed Items</TabsTrigger>
             </TabsList>
           </div>
 
