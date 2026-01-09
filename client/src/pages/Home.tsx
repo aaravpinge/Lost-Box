@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Search, Loader2, PackageOpen, HelpCircle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [search, setSearch] = useState("");
