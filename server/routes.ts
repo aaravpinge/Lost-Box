@@ -14,7 +14,21 @@ export async function registerRoutes(
   registerObjectStorageRoutes(app);
 
   app.get(api.items.list.path, async (req, res) => {
-    const items = await storage.getItems();
+    const { type, search } = req.query;
+    let items = await storage.getItems();
+
+    if (type) {
+      items = items.filter(item => item.type === type);
+    }
+
+    if (search) {
+      const searchLower = String(search).toLowerCase();
+      items = items.filter(item => 
+        item.description.toLowerCase().includes(searchLower) ||
+        item.location.toLowerCase().includes(searchLower)
+      );
+    }
+
     res.json(items);
   });
 
