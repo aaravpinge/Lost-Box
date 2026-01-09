@@ -34,7 +34,7 @@ export function Navigation() {
                     ? "bg-primary/10 text-primary" 
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}>
-                  Found Items
+                  Dashboard
                 </a>
               </Link>
               <Link href="/report/lost">
@@ -93,8 +93,8 @@ export function Navigation() {
       <div className="md:hidden border-t px-4 py-2 flex justify-around bg-white">
         <Link href="/">
           <a className={cn("flex flex-col items-center p-2 rounded-md", isActive("/") ? "text-primary" : "text-muted-foreground")}>
-            <Search className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-medium">Found</span>
+            <LayoutDashboard className="w-5 h-5 mb-1" />
+            <span className="text-[10px] font-medium">Dashboard</span>
           </a>
         </Link>
         <Link href="/report/lost">
