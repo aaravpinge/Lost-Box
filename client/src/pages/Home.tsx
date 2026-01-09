@@ -18,12 +18,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero Section */}
-      <section className="relative bg-slate-900 border-b overflow-hidden">
-        {/* Animated Background Layers */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,85,164,0.3),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(0,85,164,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-        
+      <section className="relative bg-primary border-b overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <motion.div
@@ -33,9 +28,9 @@ export default function Home() {
             >
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black text-white mb-6 tracking-tighter leading-[1.1]">
                 Lost something? <br />
-                <span className="bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent italic">Let's find it.</span>
+                <span className="italic opacity-90">Let's find it.</span>
               </h1>
-              <p className="text-lg text-blue-100/80 mb-8 max-w-2xl mx-auto leading-relaxed font-medium">
+              <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed font-medium">
                 The official Brentwood School Lost Box.
               </p>
             </motion.div>
@@ -46,15 +41,15 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <div className="absolute -inset-1.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+              <div className="absolute -inset-1.5 bg-white/20 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                  <Search className="h-6 w-6 text-blue-500" />
+                  <Search className="h-6 w-6 text-primary" />
                 </div>
                 <Input
                   type="text"
                   placeholder="Search for your item..."
-                  className="pl-14 h-14 text-lg rounded-2xl border-none shadow-2xl focus:ring-4 focus:ring-blue-500/20 bg-white placeholder:text-slate-400"
+                  className="pl-14 h-14 text-lg rounded-2xl border-none shadow-2xl focus:ring-4 focus:ring-white/20 bg-white placeholder:text-slate-400"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
