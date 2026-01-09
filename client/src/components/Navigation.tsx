@@ -29,34 +29,34 @@ export function Navigation() {
 
             <div className="hidden md:flex ml-10 space-x-1">
               <Link href="/">
-                <a className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200",
+                <span className={cn(
+                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer",
                   isActive("/") 
                     ? "bg-primary/10 text-primary" 
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}>
                   Dashboard
-                </a>
+                </span>
               </Link>
               <Link href="/report/lost">
-                <a className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200",
+                <span className={cn(
+                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer",
                   isActive("/report/lost") 
                     ? "bg-primary/10 text-primary" 
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}>
                   Report Lost Items
-                </a>
+                </span>
               </Link>
               <Link href="/report/found">
-                <a className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200",
+                <span className={cn(
+                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer",
                   isActive("/report/found") 
                     ? "bg-primary/10 text-primary" 
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}>
                   Report Found Items
-                </a>
+                </span>
               </Link>
             </div>
           </div>
@@ -93,22 +93,22 @@ export function Navigation() {
       {/* Mobile Navigation */}
       <div className="md:hidden border-t px-4 py-2 flex justify-around bg-white">
         <Link href="/">
-          <a className={cn("flex flex-col items-center p-2 rounded-md", isActive("/") ? "text-primary" : "text-muted-foreground")}>
+          <span className={cn("flex flex-col items-center p-2 rounded-md cursor-pointer", isActive("/") ? "text-primary" : "text-muted-foreground")}>
             <LayoutDashboard className="w-5 h-5 mb-1" />
             <span className="text-[10px] font-medium">Dashboard</span>
-          </a>
+          </span>
         </Link>
         <Link href="/report/lost">
-          <a className={cn("flex flex-col items-center p-2 rounded-md", isActive("/report/lost") ? "text-primary" : "text-muted-foreground")}>
+          <span className={cn("flex flex-col items-center p-2 rounded-md cursor-pointer", isActive("/report/lost") ? "text-primary" : "text-muted-foreground")}>
             <PackageSearch className="w-5 h-5 mb-1" />
             <span className="text-[10px] font-medium">Lost Items</span>
-          </a>
+          </span>
         </Link>
         <Link href="/report/found">
-          <a className={cn("flex flex-col items-center p-2 rounded-md", isActive("/report/found") ? "text-primary" : "text-muted-foreground")}>
+          <span className={cn("flex flex-col items-center p-2 rounded-md cursor-pointer", isActive("/report/found") ? "text-primary" : "text-muted-foreground")}>
             <PlusCircle className="w-5 h-5 mb-1" />
             <span className="text-[10px] font-medium">Report</span>
-          </a>
+          </span>
         </Link>
       </div>
     </nav>

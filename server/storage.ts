@@ -21,7 +21,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createItem(insertItem: InsertItem): Promise<Item> {
-    const [item] = await db.insert(items).values(insertItem as any).returning();
+    const formattedItem = {
+      ...insertItem,
+      dateLost: insertItem.dateLost ? new Date(insertItem.dateLost) : null,
+      dateFound: insertItem.dateFound ? new Date(insertItem.dateFound) : null,
+    };
+    const [item] = await db.insert(items).values(formattedItem as any).returning();
     return item;
   }
 

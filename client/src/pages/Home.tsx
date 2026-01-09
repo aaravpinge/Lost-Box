@@ -189,11 +189,11 @@ function EmptyState({ title, message, icon, type }: { title: string, message: st
       <h3 className="text-2xl font-display font-black text-slate-900 mb-2">{title}</h3>
       <p className="text-slate-500 max-w-xs mx-auto mb-8 font-medium leading-relaxed">{message}</p>
       {type && (
-        <Link href={type === 'found' ? "/report/found" : "/report/lost"}>
+        <a href={type === 'found' ? "/report/found" : "/report/lost"}>
           <Button className="rounded-xl px-8 h-12 font-bold shadow-lg shadow-primary/20">
             Report {type === 'found' ? "Found" : "Lost"} Item
           </Button>
-        </Link>
+        </a>
       )}
     </div>
   );
