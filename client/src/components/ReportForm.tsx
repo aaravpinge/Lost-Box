@@ -150,7 +150,7 @@ export function ReportForm({ type }: ReportFormProps) {
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 bg-slate-900 text-white border-slate-800 shadow-2xl" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value ? new Date(field.value) : undefined}
@@ -159,6 +159,17 @@ export function ReportForm({ type }: ReportFormProps) {
                             date > new Date() || date < new Date("1900-01-01")
                           }
                           initialFocus
+                          className="bg-slate-900 text-white"
+                          classNames={{
+                            day_today: "bg-slate-800 text-white",
+                            day_selected: "bg-primary text-white hover:bg-primary/90 focus:bg-primary",
+                            day_outside: "text-slate-600 opacity-50",
+                            day_disabled: "text-slate-700 opacity-50",
+                            nav_button: cn(
+                              buttonVariants({ variant: "outline" }),
+                              "h-7 w-7 bg-slate-800 border-slate-700 p-0 opacity-50 hover:opacity-100 text-white hover:bg-slate-700"
+                            ),
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
