@@ -66,7 +66,7 @@ export default function Home() {
                 </div>
                 <div className="flex-1 md:w-32 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center">
                   <div className="text-2xl font-black text-white leading-none">{claimedItems.length}</div>
-                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mt-1">Returned</div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mt-1">Items Claimed</div>
                 </div>
               </div>
             </div>
@@ -102,7 +102,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="font-bold text-slate-900 mb-1">Claim</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">Found a match? Claim it and pick it up from the office.</p>
+                <p className="text-sm text-slate-500 leading-relaxed">Found a match? Claim it and pick it up from the front office.</p>
               </div>
             </div>
           </div>
