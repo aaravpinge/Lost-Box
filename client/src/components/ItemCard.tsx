@@ -35,17 +35,17 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
 
   return (
     <Card className="group overflow-hidden bg-white border-slate-200 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 rounded-2xl">
-      <div className="aspect-[4/3] w-full bg-slate-100 relative overflow-hidden">
+      <div className="aspect-[16/9] w-full bg-slate-100 relative overflow-hidden">
         {item.imageUrl ? (
           <img 
             src={item.imageUrl} 
             alt={item.description}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
-            <ImageOff className="w-10 h-10 mb-2 opacity-20" />
-            <span className="text-xs font-bold uppercase tracking-widest opacity-40">No Image</span>
+            <ImageOff className="w-8 h-8 mb-1 opacity-20" />
+            <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
           </div>
         )}
         
