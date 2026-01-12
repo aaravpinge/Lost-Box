@@ -61,49 +61,49 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-4">
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-2">
           <Badge className={cn(
-            "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-none border-none",
+            "px-2 py-0 rounded-full text-[9px] font-black uppercase tracking-tighter shadow-none border-none",
             isFound ? "bg-indigo-600 text-white" : "bg-blue-600 text-white"
           )}>
             {item.type}
           </Badge>
           <div className="h-1 w-1 rounded-full bg-slate-300 ml-auto" />
-          <span className="text-[11px] font-bold text-slate-400 flex items-center uppercase tracking-wider">
-            <Calendar className="w-3 h-3 mr-1 text-slate-400" />
+          <span className="text-[10px] font-bold text-slate-400 flex items-center uppercase tracking-wider">
+            <Calendar className="w-2.5 h-2.5 mr-1 text-slate-400" />
             {format(new Date(isFound ? item.dateFound || item.dateReported : item.dateLost || item.dateReported), "MMM d, yyyy")}
           </span>
         </div>
 
-        <h3 className="font-display font-black text-xl mb-3 text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
+        <h3 className="font-display font-black text-lg mb-2 text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1 leading-tight">
           {item.description}
         </h3>
         
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 group-hover:bg-blue-50/50 transition-colors">
-            <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
-              <User className="w-4 h-4 text-blue-600" />
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 group-hover:bg-blue-50/50 transition-colors">
+            <div className="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center shrink-0">
+              <User className="w-3 h-3 text-blue-600" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">Reporter</span>
-              <span className="text-sm font-bold text-slate-700 leading-none">{item.status === 'claimed' ? `${item.claimedBy || 'Unknown'}` : item.contactName}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Reporter</span>
+              <span className="text-xs font-bold text-slate-700 leading-none truncate">{item.status === 'claimed' ? `${item.claimedBy || 'Unknown'}` : item.contactName}</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 group-hover:bg-indigo-50/50 transition-colors">
-            <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
-              <MapPin className="w-4 h-4 text-indigo-600" />
+          <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 group-hover:bg-indigo-50/50 transition-colors">
+            <div className="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center shrink-0">
+              <MapPin className="w-3 h-3 text-indigo-600" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">Location</span>
-              <span className="text-sm font-bold text-slate-700 leading-none">{item.location}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Location</span>
+              <span className="text-xs font-bold text-slate-700 leading-none truncate">{item.location}</span>
             </div>
           </div>
 
           {isFound && item.status === 'reported' && (
-            <div className="flex items-center gap-2 text-rose-500 font-bold text-xs mt-2 ml-1">
-              <Clock className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 text-rose-500 font-bold text-[10px] pt-1">
+              <Clock className="w-3 h-3" />
               <span>Deadline: {format(deadline, "MMM d")}</span>
             </div>
           )}
@@ -113,13 +113,13 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
           <Button 
             onClick={handleClaim}
             disabled={updateStatus.isPending}
-            className="w-full mt-6 h-12 rounded-xl bg-slate-900 hover:bg-blue-600 text-white font-bold text-sm transition-all duration-300 shadow-lg shadow-slate-200 hover:shadow-blue-500/25 border-none"
+            className="w-full mt-4 h-9 rounded-lg bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs transition-all duration-300 shadow-lg shadow-slate-200 hover:shadow-blue-500/25 border-none"
             data-testid={`button-claim-${item.id}`}
           >
             {updateStatus.isPending ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-3 h-3 mr-2 animate-spin" />
             ) : (
-              <CheckCircle2 className="w-4 h-4 mr-2" />
+              <CheckCircle2 className="w-3 h-3 mr-2" />
             )}
             Claim Item
           </Button>
