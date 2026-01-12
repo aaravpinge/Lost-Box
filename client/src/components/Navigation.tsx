@@ -22,7 +22,7 @@ export function Navigation() {
               <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-100 shadow-sm group-hover:border-primary/20 transition-colors">
                 <img src={schoolLogo} alt="School Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="font-display font-black text-xl tracking-tight text-slate-900">
+              <span className="font-display font-black text-xl tracking-tight text-slate-900 group-hover:text-primary transition-colors">
                 Lost Box
               </span>
             </Link>
