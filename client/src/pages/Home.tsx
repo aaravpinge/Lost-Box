@@ -29,7 +29,8 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black text-white mb-2 tracking-tighter leading-[1.1]">
-                Lost something? <span className="italic opacity-90">Let's find it.</span>
+                Lost something? <br />
+                <span className="italic opacity-90">Let's find it.</span>
               </h1>
               <p className="text-base text-white/80 mb-6 max-w-2xl mx-auto leading-relaxed font-medium">
                 The official Brentwood School Lost Box.
