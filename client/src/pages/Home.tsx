@@ -33,7 +33,7 @@ export default function Home() {
                 <span className="italic opacity-90">Let's find it.</span>
               </h1>
               <p className="text-base text-white/80 mb-6 max-w-2xl mx-auto leading-relaxed font-medium">
-                The official Brentwood School Lost Box.
+                The official Brentwood School Lost and Found.
               </p>
             </motion.div>
             
