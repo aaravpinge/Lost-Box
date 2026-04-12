@@ -173,8 +173,8 @@ export async function registerRoutes(
   // Health Check Endpoint
   app.get("/api/health", async (req, res) => {
     try {
-      const { items } = await import("../../shared/schema");
-      const { db } = await import("./db");
+      const { items } = await import("../../shared/schema.js");
+      const { db } = await import("./db.js");
       
       // Try a simple query
       const result = await db.select().from(items).limit(1);
