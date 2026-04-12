@@ -404,10 +404,12 @@ export function ReportForm({ type }: ReportFormProps) {
                         )}
                         <div>
                           <p className="font-black text-[11px] text-slate-800 uppercase tracking-tight">{match.description}</p>
-                          <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-0.5">{match.location}</p>
+                          <p className="text-[9px] text-slate-500 font-bold mt-0.5">
+                            {match.location} · Reported by <span className="text-primary font-black">{match.contactName}</span>
+                          </p>
                         </div>
                       </div>
-                      <a href={`mailto:${match.contactEmail}`} className="text-[9px] font-black uppercase tracking-[0.2em] text-white bg-primary hover:bg-primary/80 px-4 py-2.5 rounded-lg shadow-lg shadow-primary/20 transition-all active:scale-95">
+                      <a href={`mailto:${match.contactEmail}?subject=Lost Box Match: ${match.description}`} className="text-[9px] font-black uppercase tracking-[0.2em] text-white bg-primary hover:bg-primary/80 px-4 py-2.5 rounded-lg shadow-lg shadow-primary/20 transition-all active:scale-95 shrink-0">
                         Contact
                       </a>
                     </div>
