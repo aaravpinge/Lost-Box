@@ -160,17 +160,17 @@ export function ReportForm({ type }: ReportFormProps) {
   }
 
   return (
-    <div className="py-16 px-4 md:py-24 bg-slate-50/50 min-h-screen">
-      <Card className="max-w-2xl mx-auto bg-white border-slate-200 shadow-xl rounded-2xl overflow-hidden mb-12">
-        <div className="bg-primary py-10 px-8">
-          <CardTitle className="text-3xl font-bold text-white tracking-tight mb-2">
+    <div className="py-8 px-4 md:py-12 bg-slate-50/50 min-h-screen">
+      <Card className="max-w-2xl mx-auto bg-white border-slate-300 shadow-2xl rounded-2xl overflow-hidden mb-12">
+        <div className="bg-primary py-8 px-8">
+          <CardTitle className="text-2xl font-bold text-white tracking-tight mb-1">
             Submit {type === "lost" ? "Lost" : "Found"} Report
           </CardTitle>
-          <CardDescription className="text-white/80 font-medium text-sm">
-            Please provide as much detail as possible to help our team match your item.
+          <CardDescription className="text-white/80 font-medium text-xs">
+            Enter the details below to help us match your item.
           </CardDescription>
         </div>
-        <CardContent className="p-10">
+        <CardContent className="p-8">
           <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -193,7 +193,7 @@ export function ReportForm({ type }: ReportFormProps) {
                       )}
                     </div>
                     <FormControl>
-                      <Input placeholder="e.g. Blue Hydro Flask, Calculus Textbook..." {...field} className="h-12 rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white transition-all placeholder:text-slate-400" />
+                      <Input placeholder="e.g. Blue Hydro Flask, Calculus Textbook..." {...field} className="h-12 rounded-xl border-slate-400 bg-slate-50/80 text-sm focus:bg-white transition-all placeholder:text-slate-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -208,11 +208,11 @@ export function ReportForm({ type }: ReportFormProps) {
                     <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Location</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50 text-sm">
+                        <SelectTrigger className="h-12 rounded-xl border-slate-400 bg-slate-50/80 text-sm">
                           <SelectValue placeholder="Select location" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="rounded-2xl border-slate-200 shadow-2xl bg-white">
+                      <SelectContent className="rounded-2xl border-slate-300 shadow-2xl bg-white">
                         {LOCATIONS.map((loc) => (
                           <SelectItem key={loc} value={loc} className="rounded-lg py-2 cursor-pointer text-sm text-slate-200 focus:bg-primary/20">
                             {loc}
@@ -233,11 +233,11 @@ export function ReportForm({ type }: ReportFormProps) {
                     <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Category</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50 text-sm">
+                        <SelectTrigger className="h-12 rounded-xl border-slate-400 bg-slate-50/80 text-sm">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="rounded-2xl border-slate-200 shadow-2xl bg-white">
+                      <SelectContent className="rounded-2xl border-slate-300 shadow-2xl bg-white">
                         {CATEGORIES.map((cat) => (
                           <SelectItem key={cat} value={cat} className="rounded-lg py-2 cursor-pointer text-sm text-slate-200 focus:bg-primary/20">
                             {cat}
