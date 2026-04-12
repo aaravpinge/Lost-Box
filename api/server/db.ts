@@ -8,10 +8,12 @@ import * as schema from "../../shared/schema";
 let db: any;
 let pool: any;
 
-if (process.env.POSTGRES_URL) {
-  console.log("[db] Connecting to Vercel Postgres...");
+const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+
+if (connectionString) {
+  console.log("[db] Connecting to External Postgres...");
   pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
+    connectionString: connectionString,
     ssl: { rejectUnauthorized: false }
   });
   db = drizzle(pool, { schema });

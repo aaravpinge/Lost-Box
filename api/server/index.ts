@@ -87,7 +87,7 @@ app.use((req, res, next) => {
 
 export const initPromise = (async () => {
   // Sync database schema in production
-  if (process.env.POSTGRES_URL) {
+  if (process.env.POSTGRES_URL || process.env.DATABASE_URL) {
     try {
       const { migrate } = await import("drizzle-orm/node-postgres/migrator");
       const path = await import("path");
