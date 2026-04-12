@@ -160,20 +160,17 @@ export function ReportForm({ type }: ReportFormProps) {
   }
 
   return (
-    <div className="py-24 px-4 md:py-32">
-      <Card className="max-w-2xl mx-auto premium-card overflow-hidden mb-8 ring-1 ring-slate-100">
-        <div className="mesh-gradient h-32 flex items-center justify-center relative border-b border-white/10">
-          <div className="absolute inset-0 bg-black/40"></div>
-          <div className="text-center relative z-10 px-6">
-            <CardTitle className="text-3xl md:text-4xl font-black text-white tracking-normal uppercase leading-tight mb-1">
-              Report {type === "lost" ? "Lost" : "Found"} Item
-            </CardTitle>
-            <CardDescription className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">
-              BWS Lost & Found System
-            </CardDescription>
-          </div>
+    <div className="py-16 px-4 md:py-24 bg-slate-50/50 min-h-screen">
+      <Card className="max-w-2xl mx-auto bg-white border-slate-200 shadow-xl rounded-2xl overflow-hidden mb-12">
+        <div className="bg-primary py-10 px-8">
+          <CardTitle className="text-3xl font-bold text-white tracking-tight mb-2">
+            Submit {type === "lost" ? "Lost" : "Found"} Report
+          </CardTitle>
+          <CardDescription className="text-white/80 font-medium text-sm">
+            Please provide as much detail as possible to help our team match your item.
+          </CardDescription>
         </div>
-        <CardContent className="p-8">
+        <CardContent className="p-10">
           <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
