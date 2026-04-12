@@ -167,7 +167,7 @@ export function ReportForm({ type }: ReportFormProps) {
             Submit {type === "lost" ? "Lost" : "Found"} Item
           </CardTitle>
           <CardDescription className="text-white/80 font-medium text-xs">
-            Enter the details below to help us match your item.
+            Enter the details below to help us find your item.
           </CardDescription>
         </div>
         <CardContent className="p-8">
