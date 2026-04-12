@@ -6,6 +6,7 @@ import { z } from "zod";
 import { setupAuth } from "./auth";
 import { registerUploadRoutes } from "./uploads";
 import { sendItemNotification, sendMatchNotification, sendExpiryAlert } from "./email";
+import { log } from "./index";
 
 export async function registerRoutes(
   httpServer: Server,
