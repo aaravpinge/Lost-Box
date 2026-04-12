@@ -8,9 +8,12 @@ import * as schema from "../../shared/schema";
 let db: any;
 let pool: any;
 
-const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+let connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
 if (connectionString) {
+  // Sanitize: Remove channel_binding which causes issues with the pg driver and Neon
+  connectionString = connectionString.replace(/&?channel_binding=[^&]*/g, "");
+  
   console.log("[db] Connecting to External Postgres...");
   pool = new Pool({
     connectionString: connectionString,

@@ -93,12 +93,11 @@ export const initPromise = (async () => {
       const path = await import("path");
       const fs = await import("fs");
       
-      // Try multiple possible migration paths for Vercel portability
+      const cwd = process.cwd();
       const migrationPaths = [
-        path.resolve(process.cwd(), "migrations"),
-        path.resolve(process.cwd(), "dist", "migrations"),
-        path.resolve(__dirname, "migrations"),
-        path.resolve(__dirname, "..", "migrations")
+        path.join(cwd, "migrations"),
+        path.join(cwd, "api", "migrations"),
+        path.join(cwd, "dist", "migrations")
       ];
       
       let migrationDir = "";
@@ -114,7 +113,7 @@ export const initPromise = (async () => {
         await migrate(db, { migrationsFolder: migrationDir });
         log("Database migration successful!");
       } else {
-        log("Warning: No migrations folder found in any known locations.");
+        log("Warning: No migrations folder found. Schema may be out of date.");
       }
     } catch (err) {
       log(`Database migration failed: ${err}`);
