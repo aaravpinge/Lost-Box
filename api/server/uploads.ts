@@ -3,11 +3,17 @@ import fs from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 
-const UPLOADS_DIR = path.resolve(process.cwd(), "uploads");
+const UPLOADS_DIR = process.env.VERCEL
+    ? path.resolve("/tmp", "uploads")
+    : path.resolve(process.cwd(), "uploads");
 
 // Ensure uploads directory exists
 if (!fs.existsSync(UPLOADS_DIR)) {
-    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    try {
+        fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    } catch (error) {
+        console.error("Failed to create uploads directory:", error);
+    }
 }
 
 export function registerUploadRoutes(app: Express) {

@@ -7,6 +7,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { default: app } = await import('../dist/index.cjs');
     
     console.log("Server loaded. Initializing request...");
+    // Wait for initialization (migrations, route registration)
+    if (bundledApp.initPromise) {
+      await bundledApp.initPromise;
+    }
+    
     return app(req, res);
   } catch (error: any) {
     console.error("CRITICAL SERVER CRASH:");
