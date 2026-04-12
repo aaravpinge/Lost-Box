@@ -425,7 +425,7 @@ export function ReportForm({ type }: ReportFormProps) {
           </form>
         </Form>
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   );
 }
-
