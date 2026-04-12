@@ -108,7 +108,7 @@ export default function Admin() {
       </section>
 
       {/* Table Section */}
-      <div className="max-w-7xl mx-auto p-8 -mt-8 relative z-20">
+      <div className="max-w-7xl mx-auto p-8 relative z-20">
         <Card className="glass border-white/40 shadow-2xl rounded-3xl overflow-hidden min-h-[600px]">
           <Tabs defaultValue="all" className="w-full">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">

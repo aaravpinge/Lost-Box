@@ -111,14 +111,24 @@
 }
 
 @layer base {
-    * {
-        @apply border-border;
-    }
+  * {
+    @apply border-border;
+  }
 
-    body {
-        @apply bg-background text-foreground;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/20;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "ss01", "ss03", "cv01", "cv11";
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Prevent clipping on main layout */
+  main {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
     h1,
     h2,

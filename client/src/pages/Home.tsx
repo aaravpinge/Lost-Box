@@ -136,7 +136,7 @@ export default function Home() {
       </section>
 
       {/* Results Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 -mt-10 relative z-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20">
         
         {/* Category Filters */}
         <div className="flex overflow-x-auto pb-4 mb-2 gap-2 scrollbar-none">
