@@ -9,14 +9,14 @@ let db: any;
 let pool: any;
 
 if (process.env.POSTGRES_URL) {
-  // Use Vercel Postgres in Production
+  console.log("[db] Connecting to Vercel Postgres...");
   pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
     ssl: { rejectUnauthorized: false }
   });
   db = drizzle(pool, { schema });
 } else {
-  // Fall back to PGLite for Local Development
+  console.log("[db] Falling back to PGLite (Local Storage)...");
   const client = new PGlite({
     dataDir: "./.local/pglite"
   });

@@ -91,9 +91,31 @@ export const initPromise = (async () => {
     try {
       const { migrate } = await import("drizzle-orm/node-postgres/migrator");
       const path = await import("path");
-      log("Migrating database schema...");
-      await migrate(db, { migrationsFolder: path.resolve(process.cwd(), "migrations") });
-      log("Database migration successful!");
+      const fs = await import("fs");
+      
+      // Try multiple possible migration paths for Vercel portability
+      const migrationPaths = [
+        path.resolve(process.cwd(), "migrations"),
+        path.resolve(process.cwd(), "dist", "migrations"),
+        path.resolve(__dirname, "migrations"),
+        path.resolve(__dirname, "..", "migrations")
+      ];
+      
+      let migrationDir = "";
+      for (const p of migrationPaths) {
+        if (fs.existsSync(p)) {
+          migrationDir = p;
+          break;
+        }
+      }
+
+      if (migrationDir) {
+        log(`Migrating database from ${migrationDir}...`);
+        await migrate(db, { migrationsFolder: migrationDir });
+        log("Database migration successful!");
+      } else {
+        log("Warning: No migrations folder found in any known locations.");
+      }
     } catch (err) {
       log(`Database migration failed: ${err}`);
     }
