@@ -193,11 +193,18 @@ export default function Admin() {
                             <DropdownMenuContent align="end" className="rounded-2xl p-2 border-slate-200 shadow-2xl min-w-[180px]">
                               <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Workflow Actions</div>
                               <DropdownMenuItem
-                                onClick={() => handleStatusUpdate(item.id, 'retrieved')}
+                                onClick={() => updateStatus.mutate({ id: item.id, status: 'retrieved', claimedBy: 'Student' })}
                                 className="rounded-xl py-3 cursor-pointer focus:bg-emerald-50 focus:text-emerald-600 font-bold text-xs"
                               >
                                 <CheckCircle className="mr-3 h-4 w-4" />
-                                Confirm Reunion
+                                Confirm Reunion (Student)
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => updateStatus.mutate({ id: item.id, status: 'retrieved', claimedBy: 'Faculty' })}
+                                className="rounded-xl py-3 cursor-pointer focus:bg-emerald-50 focus:text-emerald-600 font-bold text-xs"
+                              >
+                                <CheckCircle className="mr-3 h-4 w-4" />
+                                Confirm Reunion (Faculty)
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleStatusUpdate(item.id, 'donated')}
