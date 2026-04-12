@@ -122,8 +122,8 @@ export class DatabaseStorage implements IStorage {
 
   async getStats(): Promise<{ totalItems: number; claimedItems: number }> {
     const allItems = await db.select().from(items);
-    const total = allItems.filter(i => i.status === 'reported').length;
-    const claimed = allItems.filter(i => i.status === 'claimed' || i.status === 'retrieved').length;
+    const total = allItems.filter((i: any) => i.status === 'reported').length;
+    const claimed = allItems.filter((i: any) => i.status === 'claimed' || i.status === 'retrieved').length;
     return { totalItems: total, claimedItems: claimed };
   }
 
