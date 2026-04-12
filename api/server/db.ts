@@ -11,8 +11,15 @@ let pool: any;
 let connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
 if (connectionString) {
-  // Sanitize: Remove channel_binding which causes issues with the pg driver and Neon
-  connectionString = connectionString.replace(/&?channel_binding=[^&]*/g, "");
+  try {
+    const url = new URL(connectionString);
+    // Remove channel_binding which causes issues with the pg driver and Neon
+    url.searchParams.delete("channel_binding");
+    connectionString = url.toString();
+  } catch (e) {
+    // If URL parsing fails, fallback to simple string replacement
+    connectionString = connectionString.replace(/&?channel_binding=[^&]*/g, "");
+  }
   
   console.log("[db] Connecting to External Postgres...");
   pool = new Pool({

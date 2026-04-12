@@ -170,5 +170,31 @@ export async function registerRoutes(
     if (items.length > 0) sendExpiryAlert(items);
   }).catch(err => console.error("Initial Expiry Check Error:", err));
 
+  // Health Check Endpoint
+  app.get("/api/health", async (req, res) => {
+    try {
+      const { items } = await import("../../shared/schema");
+      const { db } = await import("./db");
+      
+      // Try a simple query
+      const result = await db.select().from(items).limit(1);
+      
+      res.json({
+        status: "connected",
+        database: "Vercel Postgres / Neon",
+        itemCount: result.length,
+        migrationStatus: "Success (Items table found)"
+      });
+    } catch (err: any) {
+      log(`Health Check Failed: ${err.message}`);
+      res.status(500).json({
+        status: "error",
+        message: err.message,
+        stack: err.stack,
+        hint: "Check your POSTGRES_URL and ensure the migrations have run."
+      });
+    }
+  });
+
   return httpServer;
 }
