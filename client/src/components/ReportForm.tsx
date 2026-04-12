@@ -164,7 +164,7 @@ export function ReportForm({ type }: ReportFormProps) {
       <Card className="max-w-2xl mx-auto bg-white border-slate-300 shadow-2xl rounded-2xl overflow-hidden mb-12">
         <div className="bg-primary py-8 px-8 text-center">
           <CardTitle className="text-2xl font-bold text-white tracking-tight mb-1 uppercase">
-            Submit {type === "lost" ? "Lost" : "Found"} Report
+            Submit {type === "lost" ? "Lost" : "Found"} Item
           </CardTitle>
           <CardDescription className="text-white/80 font-medium text-xs">
             Enter the details below to help us match your item.
@@ -422,7 +422,7 @@ export function ReportForm({ type }: ReportFormProps) {
               disabled={isPending || isUploading}
             >
               {isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Submit {type === "lost" ? "Lost" : "Found"} Report
+              Submit {type === "lost" ? "Lost" : "Found"} Item
             </Button>
           </form>
         </Form>
