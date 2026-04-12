@@ -81,51 +81,60 @@ export async function registerRoutes(
   });
 
   // Seed data
-  const existing = await storage.getItems();
-  if (existing.length === 0) {
-    await storage.createItem({
-      type: "found",
-      description: "Blue water bottle",
-      location: "Gym",
-      contactName: "Coach Smith",
-      contactEmail: "smith@bwscampus.com",
-      dateFound: new Date().toISOString(),
-      dateLost: null,
-      category: "Water Bottles"
-    });
-    await storage.createItem({
-      type: "lost",
-      description: "Math textbook",
-      location: "Library",
-      contactName: "Jane Doe",
-      contactEmail: "jane@bwscampus.com",
-      dateLost: new Date().toISOString(),
-      dateFound: null,
-      category: "Books"
-    });
+  try {
+    const existing = await storage.getItems();
+    if (existing.length === 0) {
+      log("Seeding initial sample data...");
+      await storage.createItem({
+        type: "found",
+        description: "Blue water bottle",
+        location: "Gym",
+        contactName: "Coach Smith",
+        contactEmail: "smith@bwscampus.com",
+        dateFound: new Date().toISOString(),
+        dateLost: null,
+        category: "Water Bottles"
+      });
+      await storage.createItem({
+        type: "lost",
+        description: "Math textbook",
+        location: "Library",
+        contactName: "Jane Doe",
+        contactEmail: "jane@bwscampus.com",
+        dateLost: new Date().toISOString(),
+        dateFound: null,
+        category: "Books"
+      });
+    }
+  } catch (err) {
+    log(`Warning: Initial data seeding skipped: ${err}`);
   }
 
   // Seed admin user
-  const adminEmail = "admin@bwscampus.com";
-  const adminUser = await storage.getUserByEmail(adminEmail);
-  const crypto = await import("crypto");
-  const hashedPassword = crypto.scryptSync("admin123", "salt", 64).toString("hex");
+  try {
+    const adminEmail = "admin@bwscampus.com";
+    const adminUser = await storage.getUserByEmail(adminEmail);
+    const crypto = await import("crypto");
+    const hashedPassword = crypto.scryptSync("admin123", "salt", 64).toString("hex");
 
-  if (!adminUser) {
-    await storage.createUser({
-      email: adminEmail,
-      password: hashedPassword,
-      firstName: "Admin",
-      lastName: "User",
-      isAdmin: "true",
-    });
-    console.log("Admin user created: admin@bwscampus.com / admin123");
-  } else if (!adminUser.password || adminUser.isAdmin !== "true") {
-    await storage.updateUser(adminUser.id, {
-      password: hashedPassword,
-      isAdmin: "true"
-    });
-    console.log("Admin user updated: admin@bwscampus.com / admin123");
+    if (!adminUser) {
+      await storage.createUser({
+        email: adminEmail,
+        password: hashedPassword,
+        firstName: "Admin",
+        lastName: "User",
+        isAdmin: "true",
+      });
+      log("Admin user created: admin@bwscampus.com / admin123");
+    } else if (!adminUser.password || adminUser.isAdmin !== "true") {
+      await storage.updateUser(adminUser.id, {
+        password: hashedPassword,
+        isAdmin: "true"
+      });
+      log("Admin user updated: admin@bwscampus.com / admin123");
+    }
+  } catch (err) {
+    log(`Warning: Admin user initialization skipped: ${err}`);
   }
 
   // Setup Smart Expiry & Donation Alerts (Daily check)
