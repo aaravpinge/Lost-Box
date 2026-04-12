@@ -123,16 +123,26 @@ export const initPromise = (async () => {
 
       // Explicitly check/fix missing columns since migration might have been skipped on Vercel
       try {
+        // Ensure Users Table exists
+        await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT,
+            first_name TEXT,
+            last_name TEXT,
+            is_admin TEXT DEFAULT 'false'
+          )
+        `);
+
         await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT 'Other'`);
         await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS claimed_by text`);
         
-        // Ensure Users table is complete
+        // Final column check
         await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS password text`);
-        await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name text`);
-        await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name text`);
         await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin text DEFAULT 'false'`);
         
-        log("Schema enforcement: all columns ensured.");
+        log("Schema enforcement: user table and columns ensured.");
       } catch (err) {
         log(`Schema enforcement info: ${err}`);
       }
