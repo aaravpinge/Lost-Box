@@ -39,21 +39,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative mesh-gradient border-b border-primary-border pb-8 md:pb-12">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 relative z-10">
+      <section className="relative mesh-gradient border-b border-primary-border pb-12 pt-24 md:pb-24 md:pt-32">
+        <div className="absolute inset-0 bg-black/40 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight leading-[1.2] text-glow py-2">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-normal leading-[1.1] drop-shadow-2xl">
                 Lost something?<br />
-                <span className="italic text-white drop-shadow-[0_2px_10px_rgba(0,0,113,0.3)]">Let's find it.</span>
+                <span className="text-white opacity-90">Let's find it.</span>
               </h1>
-              <p className="text-base md:text-lg text-white/70 mb-6 max-w-2xl mx-auto leading-relaxed font-medium">
-                The school's automated lost and found system.
+              <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed font-bold">
+                BWS School Automated Lost and Found System
               </p>
             </motion.div>
 

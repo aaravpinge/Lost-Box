@@ -160,20 +160,21 @@ export function ReportForm({ type }: ReportFormProps) {
   }
 
   return (
-    <Card className="max-w-2xl mx-auto premium-card overflow-hidden mb-8 ring-1 ring-slate-100">
-      <div className="mesh-gradient h-24 flex items-center justify-center relative border-b border-white/10">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="text-center relative z-10">
-          <CardTitle className="text-3xl font-black text-white text-glow tracking-tighter uppercase italic leading-none mb-1">
-            Report {type === "lost" ? "Lost" : "Found"} Item
-          </CardTitle>
-          <CardDescription className="text-white/60 text-[10px] font-black uppercase tracking-[0.2em]">
-            BWS Lost & Found System
-          </CardDescription>
+    <div className="py-24 px-4 md:py-32">
+      <Card className="max-w-2xl mx-auto premium-card overflow-hidden mb-8 ring-1 ring-slate-100">
+        <div className="mesh-gradient h-32 flex items-center justify-center relative border-b border-white/10">
+          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="text-center relative z-10 px-6">
+            <CardTitle className="text-3xl md:text-4xl font-black text-white tracking-normal uppercase leading-tight mb-1">
+              Report {type === "lost" ? "Lost" : "Found"} Item
+            </CardTitle>
+            <CardDescription className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">
+              BWS Lost & Found System
+            </CardDescription>
+          </div>
         </div>
-      </div>
-      <CardContent className="p-8">
-        <Form {...form}>
+        <CardContent className="p-8">
+          <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
