@@ -3,16 +3,13 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    console.log("Attempting to load bundled server...");
-    console.log("Server loaded. Initializing request...");
-    console.log("Server loaded. Initializing request...");
-    // Use dynamic import since package.json has "type": "module"
-    const bundledApp = await import('./index.cjs');
-    const app = bundledApp.default;
+    console.log("Loading server from source...");
+    // Import the server directly
+    const { app, initPromise } = await import('./server/index.js');
     
-    // Wait for initialization (migrations, route registration)
-    if (bundledApp.initPromise) {
-      await bundledApp.initPromise;
+    if (initPromise) {
+      console.log("Waiting for server initialization...");
+      await initPromise;
     }
     
     return app(req, res);
