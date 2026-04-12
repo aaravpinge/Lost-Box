@@ -83,11 +83,46 @@ export function ReportForm({ type }: ReportFormProps) {
     }
   };
 
+  const ConfettiCannon = () => {
+    const particles = Array.from({ length: 50 });
+    return (
+      <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+        {particles.map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ 
+              top: "50%", 
+              left: "50%", 
+              scale: 0,
+              rotate: 0 
+            }}
+            animate={{ 
+              top: `${Math.random() * 100}%`, 
+              left: `${Math.random() * 100}%`, 
+              scale: [0, 1, 0.5],
+              rotate: 360,
+              opacity: [1, 1, 0]
+            }}
+            transition={{ 
+              duration: 2 + Math.random() * 2,
+              ease: "easeOut",
+            }}
+            className="absolute w-2 h-2 rounded-sm"
+            style={{ 
+              backgroundColor: ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#ffffff'][i % 5]
+            }}
+          />
+        ))}
+      </div>
+    );
+  };
+
   if (showSuccess) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xl">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-2xl">
+        <ConfettiCannon />
         <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
+          initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
           animate={{ scale: 1, opacity: 1 }}
           className="glass-dark p-12 rounded-[2.5rem] text-center shadow-[0_0_50px_rgba(255,255,255,0.1)] border-white/20 max-w-sm mx-4"
         >
