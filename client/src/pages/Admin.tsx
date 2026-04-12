@@ -126,7 +126,7 @@ export default function Admin() {
                     <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-none">
                       <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6 px-8">Information</TableHead>
                       <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6">Origin</TableHead>
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6">Guardian</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6">Staff</TableHead>
                       <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6">Status</TableHead>
                       <TableHead className="text-right py-6 px-8 font-black text-[10px] uppercase tracking-widest text-slate-400">Control</TableHead>
                     </TableRow>

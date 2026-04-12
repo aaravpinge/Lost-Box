@@ -127,7 +127,7 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">
-                {item.status === 'claimed' ? 'Claimed By' : 'Guardian'}
+                {item.status === 'claimed' ? 'Claimed By' : 'Staff'}
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-slate-700 truncate">
