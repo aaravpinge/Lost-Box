@@ -1,12 +1,23 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // We use require because esbuild bundles the server as a CJS file
-  // and Vercel's runtime better supports loading CJS this way
-  const bundledApp = require('./index.cjs');
-  
-  // Handle both module.exports = app and module.exports.default = app
-  const app = bundledApp.default || bundledApp;
-  
-  return app(req, res);
+  try {
+    console.log("Attempting to load bundled server...");
+    // @ts-ignore
+    const bundledApp = require('./index.cjs');
+    const app = bundledApp.default || bundledApp;
+    
+    console.log("Server loaded. Initializing request...");
+    return app(req, res);
+  } catch (error: any) {
+    console.error("CRITICAL SERVER CRASH:");
+    console.error(error.message);
+    console.error(error.stack);
+    
+    res.status(500).json({
+      error: "Server Crash",
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 }

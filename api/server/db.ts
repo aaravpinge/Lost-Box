@@ -12,7 +12,7 @@ if (process.env.POSTGRES_URL) {
   // Use Vercel Postgres in Production
   pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
-    ssl: true
+    ssl: { rejectUnauthorized: false }
   });
   db = drizzle(pool, { schema });
 } else {
