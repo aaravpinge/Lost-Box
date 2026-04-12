@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { db } from "./db";
 
 const app = express();
 const httpServer = createServer(app);
@@ -88,11 +89,13 @@ export const initPromise = (async () => {
   // Sync database schema in production
   if (process.env.POSTGRES_URL) {
     try {
-      log("Syncing database schema...");
-      // For simplicity in this stack, we'll assume the schema is managed via migrations 
-      // or we can add a simple auto-push logic here if needed.
+      const { migrate } = await import("drizzle-orm/node-postgres/migrator");
+      const path = await import("path");
+      log("Migrating database schema...");
+      await migrate(db, { migrationsFolder: path.resolve(process.cwd(), "migrations") });
+      log("Database migration successful!");
     } catch (err) {
-      log(`Database sync failed: ${err}`);
+      log(`Database migration failed: ${err}`);
     }
   }
 
