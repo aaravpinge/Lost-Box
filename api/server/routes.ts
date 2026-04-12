@@ -1,12 +1,12 @@
 import type { Express } from "express";
 import { type Server } from "http";
-import { storage } from "./storage";
-import { api } from "../../shared/routes";
+import { storage } from "./storage.js";
+import { api } from "../../shared/routes.js";
 import { z } from "zod";
-import { setupAuth } from "./auth";
-import { registerUploadRoutes } from "./uploads";
-import { sendItemNotification, sendMatchNotification, sendExpiryAlert } from "./email";
-import { log } from "./index";
+import { setupAuth } from "./auth.js";
+import { registerUploadRoutes } from "./uploads.js";
+import { sendItemNotification, sendMatchNotification, sendExpiryAlert } from "./email.js";
+import { log } from "./index.js";
 
 export async function registerRoutes(
   httpServer: Server,
