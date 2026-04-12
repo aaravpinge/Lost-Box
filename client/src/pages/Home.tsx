@@ -39,7 +39,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative mesh-gradient border-b border-primary-border pb-12 pt-24 md:pb-24 md:pt-32">
+      <section className="relative mesh-gradient border-b border-primary-border pb-8 pt-8 md:pb-12 md:pt-12">
         <div className="absolute inset-0 bg-black/40 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
@@ -48,11 +48,11 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-normal leading-[1.1] drop-shadow-2xl">
-                Lost something?<br />
-                <span className="text-white opacity-90">Let's find it.</span>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3 tracking-normal leading-[1.1] drop-shadow-2xl">
+                Lost something?
+                <span className="text-white opacity-90"> Let's find it.</span>
               </h1>
-              <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed font-bold">
+              <p className="text-sm md:text-base text-white/80 mb-6 max-w-2xl mx-auto leading-relaxed font-bold">
                 BWS School Automated Lost and Found System
               </p>
             </motion.div>
