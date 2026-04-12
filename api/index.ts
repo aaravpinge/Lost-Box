@@ -5,7 +5,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     console.log("Loading server from source...");
     // Import the server directly
-    const { app, initPromise } = await import('./server/index.js');
+    const { default: app, initPromise } = await import('./server/index.js');
     
     if (initPromise) {
       console.log("Waiting for server initialization...");
