@@ -165,13 +165,13 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
               <DialogHeader>
                 <DialogTitle className="font-black text-xl text-slate-800">Confirm Reunion</DialogTitle>
                 <DialogDescription className="font-medium text-slate-500 text-sm">
-                  Please enter the name of the student or guardian claiming this item.
+                  Please enter the name of the student or staff member claiming this item.
                 </DialogDescription>
               </DialogHeader>
               <div className="flex items-center space-x-2 py-4">
                 <Input
                   className="rounded-xl border-slate-200 bg-slate-50/50 text-sm font-bold focus:-translate-y-0.5 transition-transform"
-                  placeholder="Student or Guardian Name"
+                  placeholder="Student or Staff Name"
                   value={claimName}
                   onChange={(e) => setClaimName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && submitClaim()}
