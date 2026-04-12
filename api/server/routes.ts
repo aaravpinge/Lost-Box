@@ -31,27 +31,40 @@ export async function registerRoutes(
 
   app.post(api.items.create.path, async (req, res) => {
     try {
+      log(`POST /api/items - Received data: ${JSON.stringify(req.body)}`);
       const input = api.items.create.input.parse(req.body);
+      log(`POST /api/items - Validation successful`);
+      
       const item = await storage.createItem(input);
+      log(`POST /api/items - Database insert successful: ID ${item.id}`);
 
       // Trigger Intelligent Auto-Matching
-      const matches = await storage.findPotentialMatches(item);
-      if (matches.length > 0) {
-        sendMatchNotification(item, matches).catch(err => console.error("Match Notification Error:", err));
+      try {
+        const matches = await storage.findPotentialMatches(item);
+        if (matches.length > 0) {
+          sendMatchNotification(item, matches).catch(err => log(`Match Notification Error: ${err}`));
+        }
+      } catch (matchErr) {
+        log(`Matching logic error (continuing): ${matchErr}`);
       }
 
       // Fire and forget email notification
-      sendItemNotification(item).catch(err => console.error("Notification Error:", err));
+      sendItemNotification(item).catch(err => log(`Notification Error: ${err}`));
 
       res.status(201).json(item);
-    } catch (err) {
+    } catch (err: any) {
+      log(`POST /api/items - CRITICAL ERROR: ${err.message}`);
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
           field: err.errors[0].path.join("."),
         });
       }
-      throw err;
+      res.status(500).json({ 
+        message: "Internal Server Error", 
+        details: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
     }
   });
 
@@ -139,16 +152,18 @@ export async function registerRoutes(
   }
 
   // Setup Smart Expiry & Donation Alerts (Daily check)
-  setInterval(async () => {
-    try {
-      const expiredItems = await storage.getExpiredItems(30);
-      if (expiredItems.length > 0) {
-        sendExpiryAlert(expiredItems);
+  if (!process.env.VERCEL) {
+    setInterval(async () => {
+      try {
+        const expiredItems = await storage.getExpiredItems(30);
+        if (expiredItems.length > 0) {
+          sendExpiryAlert(expiredItems);
+        }
+      } catch (err) {
+        console.error("Expiry Alert Error:", err);
       }
-    } catch (err) {
-      console.error("Expiry Alert Error:", err);
-    }
-  }, 1000 * 60 * 60 * 24); // Every 24 hours
+    }, 1000 * 60 * 60 * 24); // Every 24 hours
+  }
 
   // Initial check on startup
   storage.getExpiredItems(30).then(items => {
