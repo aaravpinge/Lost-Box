@@ -160,10 +160,10 @@ export function ReportForm({ type }: ReportFormProps) {
   }
 
   return (
-    <div className="pt-4 pb-12 px-4 md:pt-6 bg-slate-50/50 min-h-screen">
+    <div className="pt-2 pb-12 px-4 md:pt-4 bg-slate-50/50 min-h-screen">
       <Card className="max-w-2xl mx-auto bg-white border-slate-300 shadow-2xl rounded-2xl overflow-hidden mb-12">
-        <div className="bg-primary py-8 px-8">
-          <CardTitle className="text-2xl font-bold text-white tracking-tight mb-1">
+        <div className="bg-primary py-8 px-8 text-center">
+          <CardTitle className="text-2xl font-bold text-white tracking-tight mb-1 uppercase">
             Submit {type === "lost" ? "Lost" : "Found"} Report
           </CardTitle>
           <CardDescription className="text-white/80 font-medium text-xs">

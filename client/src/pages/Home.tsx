@@ -39,8 +39,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative mesh-gradient border-b border-primary-border pb-8 pt-8 md:pb-12 md:pt-12">
-        <div className="absolute inset-0 bg-black/40 pointer-events-none"></div>
+      <section className="relative bg-primary border-b border-primary-border pb-8 pt-8 md:pb-12 md:pt-12">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <motion.div
