@@ -2,7 +2,7 @@ import { pgTable, text, serial, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export * from "./models/auth";
+export * from "./models/auth.js";
 
 export const items = pgTable("items", {
   id: serial("id").primaryKey(),

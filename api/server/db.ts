@@ -3,7 +3,7 @@ import pg from "pg";
 const { Pool } = pg;
 import { drizzle as drizzlePGLite } from "drizzle-orm/pglite";
 import { PGlite } from "@electric-sql/pglite";
-import * as schema from "../../shared/schema";
+import * as schema from "../../shared/schema.js";
 
 let db: any;
 let pool: any;
