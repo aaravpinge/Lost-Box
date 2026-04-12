@@ -37,10 +37,17 @@ export const insertItemSchema = createInsertSchema(items).omit({
     .refine((email) => email.toLowerCase().endsWith("@bwscampus.com"), {
       message: "You must use your official @bwscampus.com email address to report an item"
     }),
-  dateLost: z.string().min(1, "Date is required").nullable(),
-  dateFound: z.string().min(1, "Date is required").nullable(),
+  dateLost: z.string().optional().nullable(),
+  dateFound: z.string().optional().nullable(),
   imageUrl: z.string().optional().nullable(),
-});
+}).refine((data) => {
+  if (data.type === "lost") return !!data.dateLost && data.dateLost.length > 0;
+  if (data.type === "found") return !!data.dateFound && data.dateFound.length > 0;
+  return true;
+}, (data) => ({
+  message: "Date is required",
+  path: [data.type === "lost" ? "dateLost" : "dateFound"]
+}));
 
 export type Item = typeof items.$inferSelect;
 export type InsertItem = z.infer<typeof insertItemSchema>;
