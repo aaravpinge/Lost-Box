@@ -16,4 +16,4 @@ pglite-debug.log
 serveo.log
 *.orig
 *.patch
-uploads/
+uploads//api/index.cjs
