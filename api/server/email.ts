@@ -59,39 +59,58 @@ export async function sendItemNotification(item: Item) {
 }
 
 /**
- * Sends an email to the reporter about potential matches found in the system.
+ * Sends notifications to all parties involved in a potential match.
+ * If the new item is FOUND, it notifies all reporters of matching LOST items.
+ * If the new item is LOST, it notifies the person who lost it about current found items.
  */
-export async function sendMatchNotification(item: Item, matches: Item[]) {
-    const subject = `Potential Matches Found for your ${item.type} item: ${item.description}`;
-    const html = `
-    <h2>Good news! We found potential matches</h2>
-    <p>You recently reported a <strong>${item.type}</strong> item: "${item.description}".</p>
-    <p>Our system has identified ${matches.length} existing report(s) that might match yours:</p>
-    <ul>
-      ${matches.map(m => `
-        <li>
-          <strong>${m.description}</strong> (${m.location}) - 
-          <a href="${process.env.BASE_URL || 'http://localhost:3000'}/?search=${encodeURIComponent(m.description)}">View Item</a>
-        </li>
-      `).join('')}
-    </ul>
-    <p>Please check the dashboard to see if any of these are a match!</p>
-    <hr/>
-    <p><a href="${process.env.BASE_URL || 'http://localhost:3000'}">Visit Lost Box Dashboard</a></p>
-  `;
-
+export async function sendMatchNotification(newItem: Item, matches: Item[]) {
     try {
-        if (process.env.SMTP_USER || process.env.SMTP_HOST === "smtp.ethereal.email") {
-            await transporter.sendMail({
-                from: '"Lost Box System" <noreply@school.edu>',
-                to: item.contactEmail,
-                subject,
-                html,
-            });
-            console.log(`Match notification sent to ${item.contactEmail}`);
+        if (!process.env.SMTP_USER && process.env.SMTP_HOST !== "smtp.ethereal.email") {
+            return;
+        }
+
+        // 1. Notify the person who just submitted the new report
+        const reporterSubject = `Potential Matches Found for your ${newItem.type} item: ${newItem.description}`;
+        const reporterHtml = `
+            <h2>Match Found!</h2>
+            <p>You recently reported a <strong>${newItem.type}</strong> item: "${newItem.description}".</p>
+            <p>Our system has identified ${matches.length} matching report(s) in the system.</p>
+            <p><a href="${process.env.BASE_URL || 'http://localhost:3000'}">Visit the Dashboard to see your matches</a></p>
+        `;
+
+        await transporter.sendMail({
+            from: '"Lost Box System" <noreply@school.edu>',
+            to: newItem.contactEmail,
+            subject: reporterSubject,
+            html: reporterHtml,
+        });
+
+        // 2. IMPORTANT: If the new item is FOUND, notify everyone who LOST a matching item
+        if (newItem.type === "found") {
+            for (const lostItem of matches) {
+                if (lostItem.type === "lost") {
+                    const ownerSubject = `GOOD NEWS: A potential match for your lost ${lostItem.description} was just found!`;
+                    const ownerHtml = `
+                        <h2>We might have found your item!</h2>
+                        <p>Someone just reported finding an item that matches your lost report: <strong>"${lostItem.description}"</strong>.</p>
+                        <p><strong>Found Item Description:</strong> ${newItem.description}</p>
+                        <p><strong>Found At:</strong> ${newItem.location}</p>
+                        <hr/>
+                        <p>Please visit the <a href="${process.env.BASE_URL || 'http://localhost:3000'}">Lost Box Dashboard</a> or the Front Office to claim it.</p>
+                    `;
+
+                    await transporter.sendMail({
+                        from: '"Lost Box System" <noreply@school.edu>',
+                        to: lostItem.contactEmail,
+                        subject: ownerSubject,
+                        html: ownerHtml,
+                    });
+                    console.log(`Notification sent to original lost reporter: ${lostItem.contactEmail}`);
+                }
+            }
         }
     } catch (error) {
-        console.error("Failed to send match notification:", error);
+        console.error("Failed to send match notifications:", error);
     }
 }
 
