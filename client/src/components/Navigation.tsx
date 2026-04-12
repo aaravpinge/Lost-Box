@@ -26,7 +26,7 @@ export function Navigation() {
                 <span className="font-black text-2xl tracking-tighter text-slate-900 leading-none group-hover:text-primary transition-colors">
                   Lost Box
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">BWS School</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">Brentwood School</span>
               </div>
             </Link>
 
