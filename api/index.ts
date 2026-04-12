@@ -1,12 +1,14 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     console.log("Attempting to load bundled server...");
-    // Import the pre-built bundled server
-    const { default: app } = await import('../dist/index.cjs');
-    
     console.log("Server loaded. Initializing request...");
+    // @ts-ignore
+    const bundledApp = require('./index.cjs');
+    const app = bundledApp.default || bundledApp;
+    
     // Wait for initialization (migrations, route registration)
     if (bundledApp.initPromise) {
       await bundledApp.initPromise;
