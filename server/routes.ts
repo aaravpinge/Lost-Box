@@ -1,34 +1,22 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import { type Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { setupAuth } from "./replit_integrations/auth";
-import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+import { setupAuth } from "./auth";
+import { registerUploadRoutes } from "./uploads";
+import { sendItemNotification, sendMatchNotification, sendExpiryAlert } from "./email";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  await setupAuth(app);
-  registerObjectStorageRoutes(app);
+  setupAuth(app);
+  registerUploadRoutes(app);
 
   app.get(api.items.list.path, async (req, res) => {
     const { type, search } = req.query;
-    let items = await storage.getItems();
-
-    if (type) {
-      items = items.filter(item => item.type === type);
-    }
-
-    if (search) {
-      const searchLower = String(search).toLowerCase();
-      items = items.filter(item => 
-        item.description.toLowerCase().includes(searchLower) ||
-        item.location.toLowerCase().includes(searchLower)
-      );
-    }
-
+    let items = await storage.getItems(type as string, search as string);
     res.json(items);
   });
 
@@ -44,6 +32,16 @@ export async function registerRoutes(
     try {
       const input = api.items.create.input.parse(req.body);
       const item = await storage.createItem(input);
+
+      // Trigger Intelligent Auto-Matching
+      const matches = await storage.findPotentialMatches(item);
+      if (matches.length > 0) {
+        sendMatchNotification(item, matches).catch(err => console.error("Match Notification Error:", err));
+      }
+
+      // Fire and forget email notification
+      sendItemNotification(item).catch(err => console.error("Notification Error:", err));
+
       res.status(201).json(item);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -54,6 +52,11 @@ export async function registerRoutes(
       }
       throw err;
     }
+  });
+
+  app.get("/api/stats", async (req, res) => {
+    const stats = await storage.getStats();
+    res.json(stats);
   });
 
   app.patch(api.items.updateStatus.path, async (req, res) => {
@@ -70,8 +73,8 @@ export async function registerRoutes(
   });
 
   app.delete(api.items.delete.path, async (req, res) => {
-     if (!req.isAuthenticated()) {
-       return res.status(401).json({ message: "Unauthorized" });
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
     await storage.deleteItem(Number(req.params.id));
     res.status(204).send();
@@ -85,16 +88,62 @@ export async function registerRoutes(
       description: "Blue water bottle",
       location: "Gym",
       contactName: "Coach Smith",
-      contactEmail: "smith@school.edu",
+      contactEmail: "smith@bwscampus.com",
+      dateFound: new Date().toISOString(),
+      dateLost: null,
+      category: "Water Bottles"
     });
     await storage.createItem({
       type: "lost",
       description: "Math textbook",
       location: "Library",
       contactName: "Jane Doe",
-      contactEmail: "jane@student.edu",
+      contactEmail: "jane@bwscampus.com",
+      dateLost: new Date().toISOString(),
+      dateFound: null,
+      category: "Books"
     });
   }
+
+  // Seed admin user
+  const adminEmail = "admin@bwscampus.com";
+  const adminUser = await storage.getUserByEmail(adminEmail);
+  const crypto = await import("crypto");
+  const hashedPassword = crypto.scryptSync("admin123", "salt", 64).toString("hex");
+
+  if (!adminUser) {
+    await storage.createUser({
+      email: adminEmail,
+      password: hashedPassword,
+      firstName: "Admin",
+      lastName: "User",
+      isAdmin: "true",
+    });
+    console.log("Admin user created: admin@bwscampus.com / admin123");
+  } else if (!adminUser.password || adminUser.isAdmin !== "true") {
+    await storage.updateUser(adminUser.id, {
+      password: hashedPassword,
+      isAdmin: "true"
+    });
+    console.log("Admin user updated: admin@bwscampus.com / admin123");
+  }
+
+  // Setup Smart Expiry & Donation Alerts (Daily check)
+  setInterval(async () => {
+    try {
+      const expiredItems = await storage.getExpiredItems(30);
+      if (expiredItems.length > 0) {
+        sendExpiryAlert(expiredItems);
+      }
+    } catch (err) {
+      console.error("Expiry Alert Error:", err);
+    }
+  }, 1000 * 60 * 60 * 24); // Every 24 hours
+
+  // Initial check on startup
+  storage.getExpiredItems(30).then(items => {
+    if (items.length > 0) sendExpiryAlert(items);
+  }).catch(err => console.error("Initial Expiry Check Error:", err));
 
   return httpServer;
 }

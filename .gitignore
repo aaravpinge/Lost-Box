@@ -4,3 +4,16 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+.env
+.firebase
+.firebaserc
+.local/
+.vscode/
+dataconnect-debug.log
+dataconnect/
+lt.log
+pglite-debug.log
+serveo.log
+*.orig
+*.patch
+uploads/

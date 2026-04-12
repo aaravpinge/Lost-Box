@@ -12,7 +12,10 @@ export function useItems(type?: 'lost' | 'found', search?: string) {
       if (type) params.append('type', type);
       if (search) params.append('search', search);
       
-      const res = await fetch(`${url}?${params.toString()}`, { credentials: "include" });
+      const res = await fetch(`${url}?${params.toString()}`, { 
+        credentials: "omit",
+        headers: { "bypass-tunnel-reminder": "true" }
+      });
       if (!res.ok) throw new Error('Failed to fetch items');
       return api.items.list.responses[200].parse(await res.json());
     },
@@ -24,7 +27,10 @@ export function useItem(id: number) {
     queryKey: [api.items.get.path, id],
     queryFn: async () => {
       const url = buildUrl(api.items.get.path, { id });
-      const res = await fetch(url, { credentials: "include" });
+      const res = await fetch(url, { 
+        credentials: "omit",
+        headers: { "bypass-tunnel-reminder": "true" }
+      });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error('Failed to fetch item');
       return api.items.get.responses[200].parse(await res.json());
@@ -40,11 +46,15 @@ export function useCreateItem() {
   return useMutation({
     mutationFn: async (data: InsertItem) => {
       const validated = api.items.create.input.parse(data);
-      const res = await fetch(api.items.create.path, {
+      const url = buildUrl(api.items.create.path);
+      const res = await fetch(url, {
         method: api.items.create.method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'bypass-tunnel-reminder': 'true'
+        },
         body: JSON.stringify(validated),
-        credentials: "include",
+        credentials: "omit",
       });
       
       if (!res.ok) {
@@ -82,7 +92,10 @@ export function useUpdateItemStatus() {
       const url = buildUrl(api.items.updateStatus.path, { id });
       const res = await fetch(url, {
         method: api.items.updateStatus.method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'bypass-tunnel-reminder': 'true'
+        },
         body: JSON.stringify({ status, claimedBy }),
         credentials: "include",
       });
@@ -116,7 +129,8 @@ export function useDeleteItem() {
       const url = buildUrl(api.items.delete.path, { id });
       const res = await fetch(url, { 
         method: api.items.delete.method,
-        credentials: "include" 
+        credentials: "include",
+        headers: { "bypass-tunnel-reminder": "true" }
       });
       if (!res.ok) throw new Error('Failed to delete item');
     },

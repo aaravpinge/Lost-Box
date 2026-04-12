@@ -1,108 +1,134 @@
 import { useState } from "react";
 import { useItems } from "@/hooks/use-items";
+import { useStats } from "@/hooks/use-stats";
 import { ItemCard } from "@/components/ItemCard";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, PackageOpen, HelpCircle, CheckCircle2 } from "lucide-react";
+import { Search, Loader2, PackageOpen, HelpCircle, CheckCircle2, LayoutDashboard } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CATEGORIES } from "@shared/schema";
+import { Laptop, Shirt, Droplets, Key, Book, Package } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const { data: stats } = useStats();
   const { data: foundItems, isLoading: loadingFound } = useItems("found", search);
   const { data: lostItems, isLoading: loadingLost } = useItems("lost", search);
 
-  const claimedItems = foundItems?.filter(item => item.status === 'claimed' || item.status === 'retrieved') || [];
-  const availableFoundItems = foundItems?.filter(item => item.type === 'found' && item.status !== 'claimed' && item.status !== 'retrieved') || [];
-  const activeLostItems = lostItems?.filter(item => item.type === 'lost' && item.status !== 'claimed' && item.status !== 'retrieved') || [];
+  const claimedItems = foundItems?.filter(item => (item.status === 'claimed' || item.status === 'retrieved') && (selectedCategory === "All" || item.category === selectedCategory)) || [];
+  const availableFoundItems = foundItems?.filter(item => item.type === 'found' && item.status !== 'claimed' && item.status !== 'retrieved' && (selectedCategory === "All" || item.category === selectedCategory)) || [];
+  const activeLostItems = lostItems?.filter(item => item.type === 'lost' && item.status !== 'claimed' && item.status !== 'retrieved' && (selectedCategory === "All" || item.category === selectedCategory)) || [];
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "Electronics": return <Laptop className="w-4 h-4 text-blue-500" />;
+      case "Clothing": return <Shirt className="w-4 h-4 text-emerald-500" />;
+      case "Water Bottles": return <Droplets className="w-4 h-4 text-cyan-500" />;
+      case "Keys": return <Key className="w-4 h-4 text-amber-500" />;
+      case "Books": return <Book className="w-4 h-4 text-rose-500" />;
+      default: return <Package className="w-4 h-4 text-slate-500" />;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative bg-primary border-b overflow-hidden">
+      <section className="relative mesh-gradient border-b border-primary-border pb-8 md:pb-12">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black text-white mb-2 tracking-tighter leading-[1.1]">
-                Lost something? <br />
-                <span className="italic opacity-90">Let's find it.</span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight leading-[1.2] text-glow py-2">
+                Lost something?<br />
+                <span className="italic text-white drop-shadow-[0_2px_10px_rgba(0,0,113,0.3)]">Let's find it.</span>
               </h1>
-              <p className="text-base text-white/80 mb-6 max-w-2xl mx-auto leading-relaxed font-medium">
-                The official Brentwood School Lost and Found.
+              <p className="text-base md:text-lg text-white/70 mb-6 max-w-2xl mx-auto leading-relaxed font-medium">
+                The school's automated lost and found system.
               </p>
             </motion.div>
-            
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-4">
-              <motion.div 
+
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+              <motion.div
                 className="relative flex-1 max-w-xl group w-full"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <div className="absolute -inset-1 bg-white/20 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-primary" />
+                <div className="absolute -inset-2 bg-white/20 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-40 transition duration-1000"></div>
+                <div className="relative glass rounded-2xl p-2 flex items-center shadow-2xl">
+                  <div className="absolute left-6 pointer-events-none">
+                    <Search className="h-6 w-6 text-primary/60" />
                   </div>
                   <Input
                     type="text"
-                    placeholder="Search for your item..."
-                    className="pl-12 h-12 text-base rounded-xl border-none shadow-xl focus:ring-4 focus:ring-white/20 bg-white placeholder:text-slate-400"
+                    placeholder="What are you looking for?"
+                    className="pl-14 h-14 text-lg rounded-xl border-none bg-white/50 focus:bg-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 transition-all"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
               </motion.div>
 
-              <div className="flex gap-3 w-full md:w-auto">
-                <div className="flex-1 md:w-28 bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 text-center">
-                  <div className="text-xl font-black text-white leading-none">{(availableFoundItems.length + activeLostItems.length)}</div>
-                  <div className="text-[9px] font-bold text-white/60 uppercase tracking-widest mt-1">Total Items</div>
-                </div>
-                <div className="flex-1 md:w-28 bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 text-center">
-                  <div className="text-xl font-black text-white leading-none">{claimedItems.length}</div>
-                  <div className="text-[9px] font-bold text-white/60 uppercase tracking-widest mt-1">Items Claimed</div>
-                </div>
+              <div className="flex gap-4 w-full md:w-auto">
+                <motion.div
+                  className="flex-1 md:w-32 glass rounded-2xl p-4 text-center border-white/30"
+                  whileHover={{ y: -5 }}
+                >
+                  <div className="text-3xl font-black text-white leading-none mb-1">{stats?.totalItems ?? 0}</div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Active Items</div>
+                </motion.div>
+                <motion.div
+                  className="flex-1 md:w-32 glass rounded-2xl p-4 text-center border-white/30"
+                  whileHover={{ y: -5 }}
+                >
+                  <div className="text-3xl font-black text-secondary leading-none mb-1 text-glow">{stats?.claimedItems ?? 0}</div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Reunited</div>
+                </motion.div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How it Works Section */}
-      <section className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                <Search className="w-5 h-5 text-primary" />
+      {/* Featured Statistics / Info Bar */}
+      <section className="bg-white border-b border-primary/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 transition-colors group">
+              <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm border border-primary/10">
+                <Search className="w-5 h-5 text-primary group-hover:text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 text-sm mb-0.5">Search</h3>
-                <p className="text-[13px] text-slate-500 leading-tight">Check the dashboard to see if your item was found.</p>
+                <h3 className="font-black text-slate-900 text-[11px] uppercase tracking-wider mb-0.5">Advanced Search</h3>
+                <p className="text-[11px] text-slate-500 leading-tight font-medium">Scan our real-time database.</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                <HelpCircle className="w-5 h-5 text-indigo-600" />
+            <div className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 transition-colors group">
+              <div className="w-10 h-10 rounded-xl bg-secondary/5 flex items-center justify-center shrink-0 group-hover:bg-secondary group-hover:text-white transition-all duration-500 shadow-sm border border-secondary/10">
+                <HelpCircle className="w-5 h-5 text-secondary group-hover:text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 text-sm mb-0.5">Report</h3>
-                <p className="text-[13px] text-slate-500 leading-tight">Can't find it? Submit a report so others can help.</p>
+                <h3 className="font-black text-slate-900 text-[11px] uppercase tracking-wider mb-0.5">Instant Reports</h3>
+                <p className="text-[11px] text-slate-500 leading-tight font-medium">Post a report in seconds.</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <div className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 transition-colors group">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-sm border border-emerald-100">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 group-hover:text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 text-sm mb-0.5">Claim</h3>
-                <p className="text-[13px] text-slate-500 leading-tight">Found a match? Claim it from the front office.</p>
+                <h3 className="font-black text-slate-900 text-[11px] uppercase tracking-wider mb-0.5">Easy Reunions</h3>
+                <p className="text-[11px] text-slate-500 leading-tight font-medium">Claim from the front office.</p>
               </div>
             </div>
           </div>
@@ -110,33 +136,64 @@ export default function Home() {
       </section>
 
       {/* Results Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 -mt-10 relative z-20">
+        
+        {/* Category Filters */}
+        <div className="flex overflow-x-auto pb-4 mb-2 gap-2 scrollbar-none">
+          <Button
+            variant={selectedCategory === "All" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("All")}
+            className={cn(
+              "rounded-full font-black text-xs shrink-0 shadow-sm backdrop-blur-sm transition-all",
+              selectedCategory === "All" ? "" : "border-white/40 bg-white/60 hover:bg-white text-slate-700"
+            )}
+          >
+            All Items
+          </Button>
+          {CATEGORIES.map((category) => (
+            <Button
+              key={category}
+              variant={selectedCategory === category ? "default" : "outline"}
+              onClick={() => setSelectedCategory(category)}
+              className={cn(
+                "rounded-full font-bold text-xs shrink-0 shadow-sm backdrop-blur-sm gap-2 transition-all",
+                selectedCategory === category ? "" : "border-white/40 bg-white/60 hover:bg-white text-slate-700"
+              )}
+            >
+              {getCategoryIcon(category)}
+              {category}
+            </Button>
+          ))}
+        </div>
+
         <Tabs defaultValue="found" className="w-full">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6 bg-white p-5 rounded-3xl border shadow-xl shadow-blue-900/5">
-            <div>
-              <h2 className="text-2xl font-display font-black text-slate-900 flex items-center gap-3">
-                <div className="w-2.5 h-8 bg-primary rounded-full shadow-[0_0_15px_rgba(0,85,164,0.3)]"></div>
-                Dashboard
-              </h2>
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-8 bg-white/50 backdrop-blur-md p-5 rounded-[2rem] border border-white shadow-[0_20px_50px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/30">
+                <LayoutDashboard className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-1">
+                  Live Feed
+                </h2>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Real-time status updates</p>
+              </div>
             </div>
-            <TabsList className="bg-slate-100/80 p-1.5 rounded-2xl h-auto border border-slate-200/50">
-              <TabsTrigger value="found" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-xs" data-testid="tab-found">Found Items</TabsTrigger>
-              <TabsTrigger value="lost" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-xs" data-testid="tab-lost">Lost Items</TabsTrigger>
-              <TabsTrigger value="claimed" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-xs" data-testid="tab-claimed">Claimed Items</TabsTrigger>
+            <TabsList className="bg-slate-100/80 p-1 rounded-2xl h-auto border border-slate-200/50">
+              <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-found">Found</TabsTrigger>
+              <TabsTrigger value="lost" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-lost">Lost</TabsTrigger>
+              <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-claimed">Claimed</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="found">
+          <TabsContent value="found" className="mt-0 outline-none">
             {loadingFound ? (
-              <div className="flex flex-col items-center justify-center py-24">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                <p className="text-muted-foreground">Searching the box...</p>
-              </div>
+              <ItemGridSkeleton />
             ) : availableFoundItems.length === 0 ? (
-              <EmptyState 
-                title="No found items" 
-                message="Try searching for something else or check back later if you lost something." 
-                icon={<PackageOpen className="w-10 h-10" />} 
+              <EmptyState
+                title="The box is clear"
+                message="No items are currently in the found database. Check back soon."
+                icon={<PackageOpen className="w-12 h-12" />}
                 type="found"
               />
             ) : (
@@ -144,17 +201,14 @@ export default function Home() {
             )}
           </TabsContent>
 
-          <TabsContent value="lost">
+          <TabsContent value="lost" className="mt-0 outline-none">
             {loadingLost ? (
-              <div className="flex flex-col items-center justify-center py-24">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                <p className="text-muted-foreground">Searching reports...</p>
-              </div>
+              <ItemGridSkeleton />
             ) : activeLostItems.length === 0 ? (
-              <EmptyState 
-                title="No lost reports" 
-                message="If you found something, please report it to help its owner find it." 
-                icon={<HelpCircle className="w-10 h-10" />} 
+              <EmptyState
+                title="No active cases"
+                message="All lost items have either been found or no reports have been submitted."
+                icon={<HelpCircle className="w-12 h-12" />}
                 type="lost"
               />
             ) : (
@@ -162,14 +216,15 @@ export default function Home() {
             )}
           </TabsContent>
 
-          <TabsContent value="claimed">
+          <TabsContent value="claimed" className="mt-0 outline-none">
             {loadingFound ? (
-              <div className="flex flex-col items-center justify-center py-24">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                <p className="text-muted-foreground">Loading claimed items...</p>
-              </div>
+              <ItemGridSkeleton />
             ) : claimedItems.length === 0 ? (
-              <EmptyState title="No claimed items" message="Items will appear here once they've been claimed." icon={<CheckCircle2 className="w-8 h-8 text-muted-foreground" />} />
+              <EmptyState
+                title="History is empty"
+                message="Matches will appear here once students claim their items."
+                icon={<CheckCircle2 className="w-12 h-12" />}
+              />
             ) : (
               <ItemGrid items={claimedItems} />
             )}
@@ -182,42 +237,84 @@ export default function Home() {
 
 function EmptyState({ title, message, icon, type }: { title: string, message: string, icon: React.ReactNode, type?: 'found' | 'lost' }) {
   return (
-    <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-100 flex flex-col items-center">
-      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6 text-slate-400">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="text-center py-32 bg-white/50 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-100 flex flex-col items-center"
+    >
+      <motion.div 
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-8 text-slate-300 shadow-inner"
+      >
         {icon}
-      </div>
-      <h3 className="text-2xl font-display font-black text-slate-900 mb-2">{title}</h3>
-      <p className="text-slate-500 max-w-xs mx-auto mb-8 font-medium leading-relaxed">{message}</p>
+      </motion.div>
+      <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tighter">{title}</h3>
+      <p className="text-slate-500 max-w-sm mx-auto mb-10 font-medium leading-relaxed">{message}</p>
       {type && (
-        <a href={type === 'found' ? "/report/found" : "/report/lost"}>
-          <Button className="rounded-xl px-8 h-12 font-bold shadow-lg shadow-primary/20">
-            Report {type === 'found' ? "Found" : "Lost"} Item
+        <Link href={type === 'found' ? "/report/found" : "/report/lost"}>
+          <Button className="rounded-2xl px-10 h-14 bg-primary hover:bg-primary/90 font-black text-xs uppercase tracking-widest shadow-2xl shadow-primary/20 transition-all hover:scale-[1.05] active:scale-95">
+            Submit a Report
           </Button>
-        </a>
+        </Link>
       )}
-    </div>
+    </motion.div>
   );
 }
 
 function ItemGrid({ items }: { items: any[] }) {
   return (
-    <motion.div 
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+    <motion.div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {items.map((item) => (
+      {items.map((item, idx) => (
         <motion.div
           key={item.id}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.5, delay: idx * 0.05 }}
         >
           <ItemCard item={item} />
         </motion.div>
       ))}
     </motion.div>
+  );
+}
+
+function ItemGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        <div key={i} className="rounded-2xl overflow-hidden glass border-slate-200">
+          <Skeleton className="w-full aspect-[2.2/1] rounded-none bg-slate-200" />
+          <div className="p-6">
+            <Skeleton className="w-24 h-3 mb-4 rounded-full bg-slate-200" />
+            <Skeleton className="w-full h-5 mb-2 rounded-full bg-slate-200" />
+            <Skeleton className="w-3/4 h-5 mb-6 rounded-full bg-slate-200" />
+            <div className="space-y-4">
+              <div className="flex gap-3 items-center">
+                <Skeleton className="w-8 h-8 rounded-xl bg-slate-200" />
+                <div className="flex flex-col gap-2 w-full">
+                  <Skeleton className="w-16 h-2 rounded-full bg-slate-200" />
+                  <Skeleton className="w-24 h-3 rounded-full bg-slate-200" />
+                </div>
+              </div>
+              <div className="flex gap-3 items-center">
+                <Skeleton className="w-8 h-8 rounded-xl bg-slate-200" />
+                <div className="flex flex-col gap-2 w-full">
+                  <Skeleton className="w-16 h-2 rounded-full bg-slate-200" />
+                  <Skeleton className="w-32 h-3 rounded-full bg-slate-200" />
+                </div>
+              </div>
+            </div>
+            <Skeleton className="w-full h-12 mt-6 rounded-xl bg-slate-200" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

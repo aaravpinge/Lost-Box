@@ -1,115 +1,136 @@
 import { Link, useLocation } from "wouter";
-import { useUser } from "@/hooks/use-user";
-import { PackageSearch, Search, PlusCircle, LayoutDashboard, LogIn, LogOut } from "lucide-react";
+import { PackageSearch, Search, PlusCircle, LayoutDashboard, LogIn, LogOut, MessageSquare, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "next-themes";
 import schoolLogo from "@assets/school_logo_1767939229083.png";
 
 export function Navigation() {
   const [location] = useLocation();
-  const { data: user } = useUser();
-  const { logout } = useAuth(); // Assuming this exists or using simple redirect
+  const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const isActive = (path: string) => location === path;
 
   return (
-    <nav className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-50">
+    <nav className="glass sticky top-0 z-50 border-b border-white/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-20">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-              <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-100 shadow-sm group-hover:border-primary/20 transition-colors">
+            <Link href="/" className="flex items-center gap-4 group cursor-pointer">
+              <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/50 shadow-lg group-hover:scale-110 transition-transform duration-500">
                 <img src={schoolLogo} alt="School Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="font-display font-black text-xl tracking-tight text-slate-900 group-hover:text-primary transition-colors">
-                Lost Box
-              </span>
+              <div className="flex flex-col">
+                <span className="font-black text-2xl tracking-tighter text-slate-900 leading-none group-hover:text-primary transition-colors">
+                  Lost Box
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">BWS School</span>
+              </div>
             </Link>
 
-            <div className="hidden md:flex ml-10 space-x-1">
-              <Link href="/">
-                <span className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer",
-                  isActive("/") 
-                    ? "bg-primary/10 text-primary" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}>
-                  Dashboard
-                </span>
-              </Link>
-              <Link href="/report/lost">
-                <span className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer",
-                  isActive("/report/lost") 
-                    ? "bg-primary/10 text-primary" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}>
-                  Report Lost Items
-                </span>
-              </Link>
-              <Link href="/report/found">
-                <span className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer",
-                  isActive("/report/found") 
-                    ? "bg-primary/10 text-primary" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}>
-                  Report Found Items
-                </span>
-              </Link>
+            <div className="hidden md:flex ml-12 space-x-2">
+              {[
+                { label: "Dashboard", href: "/" },
+                { label: "Report Lost", href: "/report/lost" },
+                { label: "Report Found", href: "/report/found" },
+              ].map((link) => (
+                <Link key={link.href} href={link.href}>
+                  <span className={cn(
+                    "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 cursor-pointer",
+                    isActive(link.href)
+                      ? "bg-primary text-white shadow-lg shadow-primary/20"
+                      : "text-slate-500 hover:bg-white hover:text-primary hover:shadow-sm"
+                  )}>
+                    {link.label}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <a href="mailto:apinge2027@bwscampus.com?subject=Lost Box App Feedback&body=Device/Browser:%0D%0A%0D%0ABug Description/Error:%0D%0A%0D%0AFeature Request:%0D%0A">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-600 font-black text-[10px] uppercase tracking-widest h-10 px-4 hover:bg-emerald-100 hover:text-emerald-700 hover:border-emerald-300 transition-all shadow-sm hidden sm:flex"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Give Feedback
+              </Button>
+            </a>
             {user ? (
               <>
-                <Link href="/admin">
-                  <Button 
-                    variant={isActive("/admin") ? "default" : "ghost"}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
-                    <span className="hidden sm:inline">Admin Dashboard</span>
-                  </Button>
-                </Link>
-                <Button variant="ghost" size="sm" onClick={() => logout()}>
+                {user.isAdmin === "true" && (
+                  <Link href="/admin">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "gap-2 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-4",
+                        isActive("/admin") ? "bg-secondary text-white shadow-lg shadow-secondary/20" : "text-secondary hover:bg-secondary/5"
+                      )}
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span className="hidden sm:inline">Admin Panel</span>
+                    </Button>
+                  </Link>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => logout()}
+                  className="rounded-xl h-10 w-10 p-0 text-slate-400 hover:text-rose-500 hover:bg-rose-50"
+                >
                   <LogOut className="w-4 h-4" />
                 </Button>
               </>
             ) : (
-              <Button asChild variant="ghost" size="sm" className="gap-2">
-                <a href="/api/login">
+              <Link href="/auth">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 rounded-xl border-slate-200 font-black text-[10px] uppercase tracking-widest h-10 px-6 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm"
+                >
                   <LogIn className="w-4 h-4" />
-                  Editor Login
-                </a>
-              </Button>
+                  Staff Login
+                </Button>
+              </Link>
             )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="rounded-xl h-10 w-10 p-0 text-slate-500 hover:text-primary transition-colors hover:bg-slate-100"
+            >
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
           </div>
         </div>
       </div>
-      
+
       {/* Mobile Navigation */}
-      <div className="md:hidden border-t px-4 py-2 flex justify-around bg-white">
-        <Link href="/">
-          <span className={cn("flex flex-col items-center p-2 rounded-md cursor-pointer", isActive("/") ? "text-primary" : "text-muted-foreground")}>
-            <LayoutDashboard className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-medium">Dashboard</span>
-          </span>
-        </Link>
-        <Link href="/report/lost">
-          <span className={cn("flex flex-col items-center p-2 rounded-md cursor-pointer", isActive("/report/lost") ? "text-primary" : "text-muted-foreground")}>
-            <PackageSearch className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-medium">Lost Items</span>
-          </span>
-        </Link>
-        <Link href="/report/found">
-          <span className={cn("flex flex-col items-center p-2 rounded-md cursor-pointer", isActive("/report/found") ? "text-primary" : "text-muted-foreground")}>
-            <PlusCircle className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-medium">Report</span>
-          </span>
-        </Link>
+      <div className="md:hidden border-t border-slate-100 flex justify-around p-2 bg-white/50 backdrop-blur-xl">
+        {[
+          { icon: LayoutDashboard, label: "Feed", href: "/" },
+          { icon: PackageSearch, label: "Lost", href: "/report/lost" },
+          { icon: PlusCircle, label: "Found", href: "/report/found" },
+        ].map((item) => (
+          <Link key={item.href} href={item.href}>
+            <span className={cn(
+              "flex flex-col items-center p-3 rounded-2xl cursor-pointer transition-all min-w-[70px]",
+              isActive(item.href) ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-400"
+            )}>
+              <item.icon className="w-5 h-5 mb-1" />
+              <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
+            </span>
+          </Link>
+        ))}
       </div>
     </nav>
   );

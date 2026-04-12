@@ -1,100 +1,153 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-body: 'DM Sans', sans-serif;
-  --font-display: 'Space Grotesk', sans-serif;
+@layer base {
+    :root {
+        --background: 210 40% 98%;
+        --foreground: 209 100% 10%;
 
-  /* Brentwood School Palette: Deep Navy & Gold */
-  --background: 210 20% 98%;
-  --foreground: 222 47% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: 209 100% 10%;
+        --card-border: 214 32% 91%;
 
-  --primary: 210 100% 32%; /* Exact Logo Blue #00529B */
-  --primary-foreground: 210 40% 98%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 209 100% 10%;
+        --popover-border: 214 32% 91%;
 
-  --secondary: 47 95% 55%; /* Golden Yellow #FFD700-ish */
-  --secondary-foreground: 222 47% 11%;
+        --primary: 209 100% 32%;
+        /* Brentwood Navy */
+        --primary-foreground: 210 40% 98%;
+        --primary-border: hsl(209, 100% 25%);
 
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+        --secondary: 0 72% 51%;
+        /* Brentwood Red */
+        --secondary-foreground: 210 40% 98%;
+        --secondary-border: hsl(0, 72% 41%);
 
-  --accent: 262 83% 58%;
-  --accent-foreground: 210 40% 98%;
+        --muted: 210 40% 95%;
+        --muted-foreground: 215 16% 47%;
+        --muted-border: hsl(210 40% 95%);
 
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
+        --accent: 209 100% 95%;
+        --accent-foreground: 209 100% 32%;
+        --accent-border: hsl(209, 100% 90%);
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 221 83% 53%;
-  
-  --radius: 0.75rem;
-}
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 210 40% 98%;
+        --destructive-border: hsl(0 84% 60%);
 
-.dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  
-  --primary: 217 91% 60%;
-  --primary-foreground: 222 47% 11%;
-  
-  --secondary: 47 95% 55%;
-  --secondary-foreground: 222 47% 11%;
-  
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
-  
-  --accent: 262 83% 58%;
-  --accent-foreground: 210 40% 98%;
-  
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 210 40% 98%;
-  
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
-  --ring: 217 91% 60%;
+        --border: 214 32% 91%;
+        --input: 214 32% 91%;
+        --ring: 209 100% 32%;
+
+        --radius: 1rem;
+
+        --sidebar: 0 0% 98%;
+        --sidebar-foreground: 240 5% 26%;
+        --sidebar-primary: 209 100% 32%;
+        --sidebar-primary-foreground: 0 0% 98%;
+        --sidebar-primary-border: hsl(209 100% 32%);
+        --sidebar-accent: 240 5% 96%;
+        --sidebar-accent-foreground: 240 6% 10%;
+        --sidebar-accent-border: hsl(240 5% 96%);
+        --sidebar-border: 220 13% 91%;
+        --sidebar-ring: 209 100% 32%;
+    }
+
+    .dark {
+        --background: 222.2 84% 4.9%;
+        --foreground: 210 40% 98%;
+
+        --card: 222.2 84% 4.9%;
+        --card-foreground: 210 40% 98%;
+        --card-border: 217.2 32.6% 17.5%;
+
+        --popover: 222.2 84% 4.9%;
+        --popover-foreground: 210 40% 98%;
+        --popover-border: 217.2 32.6% 17.5%;
+
+        --primary: 246 83% 58%;
+        --primary-foreground: 210 40% 98%;
+        --primary-border: hsl(246 83% 58%);
+
+        --secondary: 217.2 32.6% 17.5%;
+        --secondary-foreground: 210 40% 98%;
+        --secondary-border: hsl(217.2 32.6% 17.5%);
+
+        --muted: 217.2 32.6% 17.5%;
+        --muted-foreground: 215 20.2% 65.1%;
+        --muted-border: hsl(217.2 32.6% 17.5%);
+
+        --accent: 217.2 32.6% 17.5%;
+        --accent-foreground: 210 40% 98%;
+        --accent-border: hsl(217.2 32.6% 17.5%);
+
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 210 40% 98%;
+        --destructive-border: hsl(0 62.8% 30.6%);
+
+        --border: 217.2 32.6% 17.5%;
+        --input: 217.2 32.6% 17.5%;
+        --ring: 246 83% 58%;
+
+        --sidebar: 240 5.9% 10%;
+        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-primary: 246 83% 58%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-primary-border: hsl(246 83% 58%);
+        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-accent-border: hsl(240 3.7% 15.9%);
+        --sidebar-border: 240 3.7% 15.9%;
+        --sidebar-ring: 246 83% 58%;
+
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+    }
 }
 
 @layer base {
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-family: var(--font-body);
-  }
+    * {
+        @apply border-border;
+    }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
-    @apply font-bold tracking-tight;
-  }
+    body {
+        @apply bg-background text-foreground;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Outfit', sans-serif;
+    }
 }
 
-/* Custom Utilities for Polish */
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  
-  .glass-panel {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
-  }
-  
-  .dark .glass-panel {
-    @apply bg-black/40 border-white/10;
-  }
-}
+@layer components {
+    .glass {
+        @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.05)];
+    }
 
-/* Animations */
-@keyframes enter {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+    .glass-dark {
+        @apply bg-slate-900/60 backdrop-blur-md border border-white/5 shadow-2xl;
+    }
 
-.animate-enter {
-  animation: enter 0.4s ease-out forwards;
-}
+    .mesh-gradient {
+        background-color: hsla(209, 100%, 32%, 1);
+        background-image:
+            radial-gradient(at 0% 0%, hsla(0, 72%, 51%, 0.3) 0px, transparent 50%),
+            radial-gradient(at 50% 0%, hsla(209, 100%, 45%, 0.2) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(0, 0%, 100%, 0.1) 0px, transparent 50%);
+    }
 
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
+    .text-glow {
+        text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    }
+}

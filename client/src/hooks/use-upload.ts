@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import type { UppyFile } from "@uppy/core";
+import { buildUrl } from "@shared/routes";
 
 interface UploadMetadata {
   name: string;
@@ -62,7 +63,8 @@ export function useUpload(options: UseUploadOptions = {}) {
    */
   const requestUploadUrl = useCallback(
     async (file: File): Promise<UploadResponse> => {
-      const response = await fetch("/api/uploads/request-url", {
+      const url = buildUrl("/api/uploads/request-url");
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -162,7 +164,8 @@ export function useUpload(options: UseUploadOptions = {}) {
       headers?: Record<string, string>;
     }> => {
       // Use the actual file properties to request a per-file presigned URL
-      const response = await fetch("/api/uploads/request-url", {
+      const url = buildUrl("/api/uploads/request-url");
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

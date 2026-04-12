@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useItems, useUpdateItemStatus, useDeleteItem } from "@/hooks/use-items";
-import { useUser } from "@/hooks/use-user";
+import { useAuth } from "@/hooks/use-auth";
 import { format } from "date-fns";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import {
   DropdownMenu,
@@ -20,28 +20,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  MoreVertical, 
-  CheckCircle, 
-  Archive, 
-  Trash2, 
-  Search, 
-  Loader2, 
-  Filter
+import {
+  MoreVertical,
+  CheckCircle,
+  Archive,
+  Trash2,
+  Search,
+  Loader2,
+  Filter,
+  Clock
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export default function Admin() {
-  const { user, isLoading: userLoading } = useUser();
+  const { user, isLoading: userLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const { data: items, isLoading: itemsLoading } = useItems(undefined, search);
   const updateStatus = useUpdateItemStatus();
   const deleteItem = useDeleteItem();
 
-  // Redirect if not logged in
-  if (!userLoading && !user) {
-    window.location.href = "/api/login";
+  // Redirect if not logged in or not an admin
+  if (!userLoading && (!user || user.isAdmin !== "true")) {
+    setLocation(user ? "/" : "/auth");
     return null;
   }
 
@@ -73,118 +76,165 @@ export default function Admin() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+    <div className="min-h-screen bg-background">
+      {/* Header Section */}
+      <section className="mesh-gradient py-12 px-8 border-b border-primary-border relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
-            <h1 className="text-3xl font-display font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage lost and found items, track status, and donations.</p>
+            <Badge className="bg-secondary text-white border-none mb-4 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-lg">
+              Authorized Personnel Only
+            </Badge>
+            <h1 className="text-4xl md:text-5xl font-black text-white text-glow tracking-tighter mb-2">
+              Command Center
+            </h1>
+            <p className="text-white/70 font-medium text-lg">
+              Managing {items?.length || 0} reports in the system.
+            </p>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-              <Input 
-                placeholder="Search items..." 
-                className="pl-9 bg-white w-64"
+
+          <div className="flex items-center gap-4">
+            <div className="relative group">
+              <Search className="w-5 h-5 absolute left-4 top-4 text-white/40 group-focus-within:text-white transition-colors" />
+              <Input
+                placeholder="Search database..."
+                className="pl-12 h-14 bg-white/10 border-white/20 text-white placeholder:text-white/40 rounded-2xl w-full md:w-80 backdrop-blur-md focus:bg-white focus:text-slate-900 focus:ring-4 focus:ring-white/20 transition-all text-lg font-medium"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="icon">
-              <Filter className="w-4 h-4" />
-            </Button>
           </div>
         </div>
+      </section>
 
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+      {/* Table Section */}
+      <div className="max-w-7xl mx-auto p-8 -mt-8 relative z-20">
+        <Card className="glass border-white/40 shadow-2xl rounded-3xl overflow-hidden min-h-[600px]">
           <Tabs defaultValue="all" className="w-full">
-            <div className="p-4 border-b bg-muted/10">
-              <TabsList>
-                <TabsTrigger value="all">All Items</TabsTrigger>
-                <TabsTrigger value="lost">Lost Reports</TabsTrigger>
-                <TabsTrigger value="found">Found Items</TabsTrigger>
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <TabsList className="bg-slate-100/50 p-1 rounded-xl">
+                <TabsTrigger value="all" className="rounded-lg px-6 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">All Reports</TabsTrigger>
+                <TabsTrigger value="lost" className="rounded-lg px-6 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">Lost Reports</TabsTrigger>
+                <TabsTrigger value="found" className="rounded-lg px-6 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">Found Items</TabsTrigger>
               </TabsList>
             </div>
 
             <TabsContent value="all" className="m-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Date Reported</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items?.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {item.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">{item.description}</TableCell>
-                      <TableCell>{item.location}</TableCell>
-                      <TableCell>{format(new Date(item.dateReported), 'MMM d, yyyy')}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col text-sm">
-                          <span>{item.contactName}</span>
-                          <span className="text-muted-foreground text-xs">{item.contactEmail}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusBadgeVariant(item.status) as any}>
-                          {item.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleStatusUpdate(item.id, 'retrieved')}>
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Mark Retrieved
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleStatusUpdate(item.id, 'donated')}>
-                              <Archive className="mr-2 h-4 w-4" />
-                              Mark Donated
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDelete(item.id)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete Record
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-none">
+                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6 px-8">Information</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6">Origin</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6">Guardian</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-6">Status</TableHead>
+                      <TableHead className="text-right py-6 px-8 font-black text-[10px] uppercase tracking-widest text-slate-400">Control</TableHead>
                     </TableRow>
-                  ))}
-                  {items?.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
-                        No items found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {items?.map((item) => (
+                      <TableRow key={item.id} className="group hover:bg-slate-50/80 transition-all border-slate-100 h-24">
+                        <TableCell className="px-8">
+                          <div className="flex items-center gap-4">
+                            <div className={cn(
+                              "w-2 h-10 rounded-full shrink-0",
+                              item.type === 'found' ? "bg-primary shadow-[0_0_10px_rgba(0,85,164,0.3)]" : "bg-secondary shadow-[0_0_10px_rgba(183,18,52,0.3)]"
+                            )} />
+                            <div className="flex flex-col">
+                              <span className="font-black text-slate-900 group-hover:text-primary transition-colors text-lg tracking-tight leading-none mb-1">
+                                {item.description}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 py-0.5 rounded-md bg-slate-100">
+                                  {item.type}
+                                </span>
+                                <span className="text-xs text-slate-400 font-bold">
+                                  Ref: #{item.id}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-black text-slate-700 mb-0.5 tracking-tight">{item.location}</span>
+                            <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest">
+                              <Clock className="w-2.5 h-2.5" />
+                              {format(new Date(item.dateReported), 'MMM d, h:mm a')}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <a
+                            href={`mailto:${item.contactEmail}`}
+                            className="flex flex-col group/email"
+                          >
+                            <span className="text-sm font-black text-slate-700 group-hover/email:text-primary transition-colors">{item.contactName}</span>
+                            <span className="text-[10px] font-bold text-slate-400 group-hover/email:underline">{item.contactEmail}</span>
+                          </a>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={cn(
+                            "px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm",
+                            item.status === 'retrieved' ? "bg-emerald-500 text-white" :
+                              item.status === 'donated' ? "bg-amber-500 text-white" :
+                                "bg-slate-200 text-slate-600"
+                          )}>
+                            {item.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right px-8">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-slate-200 transition-all">
+                                <MoreVertical className="h-5 w-5 text-slate-400" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="rounded-2xl p-2 border-slate-200 shadow-2xl min-w-[180px]">
+                              <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Workflow Actions</div>
+                              <DropdownMenuItem
+                                onClick={() => handleStatusUpdate(item.id, 'retrieved')}
+                                className="rounded-xl py-3 cursor-pointer focus:bg-emerald-50 focus:text-emerald-600 font-bold text-xs"
+                              >
+                                <CheckCircle className="mr-3 h-4 w-4" />
+                                Confirm Reunion
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleStatusUpdate(item.id, 'donated')}
+                                className="rounded-xl py-3 cursor-pointer focus:bg-amber-50 focus:text-amber-600 font-bold text-xs"
+                              >
+                                <Archive className="mr-3 h-4 w-4" />
+                                Record Donation
+                              </DropdownMenuItem>
+                              <div className="h-px bg-slate-100 my-2" />
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(item.id)}
+                                className="rounded-xl py-3 cursor-pointer focus:bg-rose-50 focus:text-rose-600 font-bold text-xs text-rose-500"
+                              >
+                                <Trash2 className="mr-3 h-4 w-4" />
+                                Permanent Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {items?.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-64 text-center">
+                          <div className="flex flex-col items-center justify-center text-slate-300">
+                            <Search className="w-12 h-12 mb-4 opacity-20" />
+                            <p className="font-black uppercase tracking-[0.2em] text-xs">No matching records found</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </TabsContent>
-            {/* Can replicate content for other tabs filtered by type if needed, 
-                or just filter the `items` array above based on active tab state */}
           </Tabs>
-        </div>
+        </Card>
       </div>
     </div>
   );

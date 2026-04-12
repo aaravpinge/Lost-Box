@@ -1,0 +1,22 @@
+{
+  "name": "Lost Box | BWS School",
+  "short_name": "Lost Box",
+  "description": "Smart Lost and Found for BWS Campus",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#002b52",
+  "theme_color": "#002b52",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

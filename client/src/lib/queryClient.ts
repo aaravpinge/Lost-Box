@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { buildUrl } from "@shared/routes";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -12,11 +13,15 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const fullUrl = buildUrl(url);
+  const res = await fetch(fullUrl, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: {
+      ...(data ? { "Content-Type": "application/json" } : {}),
+      "bypass-tunnel-reminder": "true"
+    },
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    credentials: url.includes('/api/items') || url.includes('/api/stats') ? "omit" : "include",
   });
 
   await throwIfResNotOk(res);
@@ -29,8 +34,10 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
+    const url = buildUrl(queryKey.join("/") as string);
+    const res = await fetch(url, {
+      credentials: url.includes('/api/items') || url.includes('/api/stats') ? "omit" : "include",
+      headers: { "bypass-tunnel-reminder": "true" }
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

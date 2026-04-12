@@ -77,7 +77,14 @@ export const api = {
 };
 
 export function buildUrl(path: string, params?: Record<string, string | number>): string {
-  let url = path;
+  // If we are on Firebase Hosting (static), proxy requests to a stable local tunnel
+  const isFirebase = typeof window !== 'undefined' && (
+      window.location.hostname.includes('web.app') || 
+      window.location.hostname.includes('firebaseapp.com')
+  );
+  const baseUrl = isFirebase ? 'https://8e2fc305eb48e78e-172-250-5-58.serveousercontent.com' : '';
+  
+  let url = baseUrl + path;
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (url.includes(`:${key}`)) {
