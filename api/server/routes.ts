@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage";
-import { api } from "../shared/routes";
+import { api } from "../../shared/routes";
 import { z } from "zod";
 import { setupAuth } from "./auth";
 import { registerUploadRoutes } from "./uploads";

@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { type Item } from "../shared/schema";
+import { type Item } from "../../shared/schema";
 
 // Create a transporter using environment variables
 // For local testing, you can use a service like Ethereal or a real Gmail app password

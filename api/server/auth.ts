@@ -3,7 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import express, { type Express } from "express";
 import { storage } from "./storage";
-import { type User as SelectUser } from "../shared/schema";
+import { type User as SelectUser } from "../../shared/schema";
 import crypto from "crypto";
 import MemoryStore from "memorystore";
 
