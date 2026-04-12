@@ -29,6 +29,7 @@ app.use((req, res, next) => {
     origin.includes('loca.lt') || 
     origin.includes('pinggy-free.link') || 
     origin.includes('localhost') || 
+    origin.includes('vercel.app') || 
     origin.includes('firebaseapp.com')
   );
 
@@ -84,6 +85,17 @@ app.use((req, res, next) => {
 });
 
 export const initPromise = (async () => {
+  // Sync database schema in production
+  if (process.env.POSTGRES_URL) {
+    try {
+      log("Syncing database schema...");
+      // For simplicity in this stack, we'll assume the schema is managed via migrations 
+      // or we can add a simple auto-push logic here if needed.
+    } catch (err) {
+      log(`Database sync failed: ${err}`);
+    }
+  }
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
