@@ -36,15 +36,12 @@ export default function AuthPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
+                credentials: "include",
             });
 
             if (res.ok) {
-                const loggedInUser = await res.json();
-                if (loggedInUser.isAdmin === "true") {
-                    setLocation("/admin");
-                } else {
-                    setLocation("/");
-                }
+                // Hard redirect to admin — ensures auth state fully refreshes
+                window.location.href = "/admin";
             } else {
                 const data = await res.json();
                 toast({
