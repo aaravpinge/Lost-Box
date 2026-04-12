@@ -378,12 +378,17 @@ export function ReportForm({ type }: ReportFormProps) {
                 className="bg-primary/5 border border-primary/20 rounded-2xl p-6 shadow-sm ring-1 ring-primary/10 overflow-hidden relative"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl -z-10"></div>
-                <div className="flex items-center gap-3 text-primary font-black uppercase tracking-tighter text-sm mb-4">
+                <div className="flex items-center gap-3 text-primary font-black uppercase tracking-tighter text-sm mb-1">
                   <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                     <AlertCircle className="w-3.5 h-3.5 text-white" />
                   </div>
                   System Match Detected!
                 </div>
+                <p className="text-xs text-slate-500 mb-4 ml-9">
+                  {type === "lost" 
+                    ? "Someone found an item that matches your description!" 
+                    : "Someone reported this item as lost!"}
+                </p>
                 <div className="space-y-3">
                   {potentialMatches.slice(0, 2).map(match => (
                     <div key={match.id} className="bg-white border border-primary/10 p-4 rounded-xl flex items-center justify-between gap-4">
