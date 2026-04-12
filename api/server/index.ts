@@ -134,6 +134,37 @@ export const initPromise = (async () => {
     }
   }
 
+  // Force create Admin user
+  try {
+    const adminEmail = "admin@bwscampus.com";
+    const { storage } = await import("./storage.js");
+    const adminUser = await storage.getUserByEmail(adminEmail);
+    
+    // Hash password: 'admin123'
+    const crypto = await import("crypto");
+    const hashedPassword = crypto.scryptSync("admin123", "salt", 64).toString("hex");
+
+    if (!adminUser) {
+      await storage.createUser({
+        email: adminEmail,
+        password: hashedPassword,
+        firstName: "System",
+        lastName: "Administrator",
+        isAdmin: "true",
+      });
+      log("SECURITY: Admin user 'admin@bwscampus.com' created successfully.");
+    } else {
+      // Ensure existing admin has the correct password and admin status
+      await storage.updateUser(adminUser.id, {
+        password: hashedPassword,
+        isAdmin: "true"
+      });
+      log("SECURITY: Admin user 'admin@bwscampus.com' confirmed and password reset to 'admin123'.");
+    }
+  } catch (err) {
+    log(`Warning: Admin initialization error: ${err}`);
+  }
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
