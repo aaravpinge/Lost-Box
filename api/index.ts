@@ -2,10 +2,9 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    console.log("Attempting to load bundled server...");
-    // @ts-ignore
-    const bundledApp = require('./index.cjs');
-    const app = bundledApp.default || bundledApp;
+    console.log("Attempting to load server...");
+    // Use dynamic import instead of require
+    const { default: app } = await import('./server/index');
     
     console.log("Server loaded. Initializing request...");
     return app(req, res);
