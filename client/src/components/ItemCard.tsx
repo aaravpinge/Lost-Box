@@ -45,7 +45,7 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
   };
 
   return (
-    <Card className="group overflow-hidden bg-white/50 backdrop-blur-sm border-slate-200 hover:border-primary/50 hover:shadow-[0_20px_50px_rgba(209,100,52,0.1)] transition-all duration-500 rounded-2xl relative">
+    <Card className="group overflow-hidden bg-white border-slate-200 hover:border-primary/50 hover:shadow-[0_20px_50px_rgba(209,100,52,0.1)] transition-all duration-500 rounded-2xl relative">
       {/* Type Ribbon */}
       <div className={cn(
         "absolute top-0 left-0 w-16 h-16 overflow-hidden z-20 pointer-events-none",

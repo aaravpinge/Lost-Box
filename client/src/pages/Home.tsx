@@ -135,17 +135,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Results Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20">
-        
         {/* Category Filters */}
         <div className="flex overflow-x-auto pb-4 mb-2 gap-2 scrollbar-none">
           <Button
             variant={selectedCategory === "All" ? "default" : "outline"}
             onClick={() => setSelectedCategory("All")}
             className={cn(
-              "rounded-full font-black text-xs shrink-0 shadow-sm backdrop-blur-sm transition-all",
-              selectedCategory === "All" ? "" : "border-white/40 bg-white/60 hover:bg-white text-slate-700"
+              "rounded-full font-black text-xs shrink-0 shadow-sm transition-all",
+              selectedCategory === "All" ? "" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
             )}
           >
             All Items

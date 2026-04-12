@@ -160,7 +160,7 @@ export function ReportForm({ type }: ReportFormProps) {
   }
 
   return (
-    <Card className="max-w-2xl mx-auto glass border-white/20 shadow-2xl rounded-[2.5rem] overflow-hidden mb-8 ring-1 ring-white/10">
+    <Card className="max-w-2xl mx-auto premium-card overflow-hidden mb-8 ring-1 ring-slate-100">
       <div className="mesh-gradient h-24 flex items-center justify-center relative border-b border-white/10">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="text-center relative z-10">
@@ -195,7 +195,7 @@ export function ReportForm({ type }: ReportFormProps) {
                       )}
                     </div>
                     <FormControl>
-                      <Input placeholder="e.g. Blue Hydro Flask, Calculus Textbook..." {...field} className="h-12 rounded-xl border-white/10 bg-white/5 text-sm focus:bg-white/10 transition-all placeholder:text-slate-600 border shadow-inner" />
+                      <Input placeholder="e.g. Blue Hydro Flask, Calculus Textbook..." {...field} className="h-12 rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white transition-all placeholder:text-slate-400" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -210,11 +210,11 @@ export function ReportForm({ type }: ReportFormProps) {
                     <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Location</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="h-12 rounded-xl border-white/10 bg-white/5 text-sm">
+                        <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50 text-sm">
                           <SelectValue placeholder="Select location" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="rounded-2xl border-white/10 shadow-2xl glass-dark">
+                      <SelectContent className="rounded-2xl border-slate-200 shadow-2xl bg-white">
                         {LOCATIONS.map((loc) => (
                           <SelectItem key={loc} value={loc} className="rounded-lg py-2 cursor-pointer text-sm text-slate-200 focus:bg-primary/20">
                             {loc}
@@ -235,11 +235,11 @@ export function ReportForm({ type }: ReportFormProps) {
                     <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Category</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="h-12 rounded-xl border-white/10 bg-white/5 text-sm">
+                        <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50 text-sm">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="rounded-2xl border-white/10 shadow-2xl glass-dark">
+                      <SelectContent className="rounded-2xl border-slate-200 shadow-2xl bg-white">
                         {CATEGORIES.map((cat) => (
                           <SelectItem key={cat} value={cat} className="rounded-lg py-2 cursor-pointer text-sm text-slate-200 focus:bg-primary/20">
                             {cat}
@@ -283,7 +283,7 @@ export function ReportForm({ type }: ReportFormProps) {
                           }}
                           disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                           initialFocus
-                          className="glass-dark border-transparent rounded-2xl"
+                          className="bg-white border-transparent rounded-2xl"
                         />
                       </PopoverContent>
                     </Popover>
