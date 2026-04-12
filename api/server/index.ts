@@ -97,13 +97,17 @@ export const initPromise = (async () => {
       const migrationPaths = [
         path.join(cwd, "migrations"),
         path.join(cwd, "api", "migrations"),
-        path.join(cwd, "dist", "migrations")
+        path.join(cwd, "dist", "migrations"),
+        path.resolve(cwd, "..", "migrations")
       ];
+      
+      log(`Checking for migrations in: ${migrationPaths.join(", ")}`);
       
       let migrationDir = "";
       for (const p of migrationPaths) {
         if (fs.existsSync(p)) {
           migrationDir = p;
+          log(`Found migrations at: ${p}`);
           break;
         }
       }
