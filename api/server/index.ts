@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes.js";
 import { serveStatic } from "./static.js";
 import { createServer } from "http";
 import { db } from "./db.js";
+import { sql } from "drizzle-orm";
 
 const app = express();
 const httpServer = createServer(app);
@@ -118,6 +119,15 @@ export const initPromise = (async () => {
         log("Database migration successful!");
       } else {
         log("Warning: No migrations folder found. Schema may be out of date.");
+      }
+
+      // Explicitly check/fix missing columns since migration might have been skipped on Vercel
+      try {
+        await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT 'Other'`);
+        await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS claimed_by text`);
+        log("Schema enforcement: category and claimed_by columns ensured.");
+      } catch (err) {
+        log(`Schema enforcement info: ${err}`);
       }
     } catch (err) {
       log(`Database migration failed: ${err}`);
