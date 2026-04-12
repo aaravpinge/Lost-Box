@@ -125,7 +125,14 @@ export const initPromise = (async () => {
       try {
         await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT 'Other'`);
         await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS claimed_by text`);
-        log("Schema enforcement: category and claimed_by columns ensured.");
+        
+        // Ensure Users table is complete
+        await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS password text`);
+        await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name text`);
+        await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name text`);
+        await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin text DEFAULT 'false'`);
+        
+        log("Schema enforcement: all columns ensured.");
       } catch (err) {
         log(`Schema enforcement info: ${err}`);
       }
