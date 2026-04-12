@@ -105,6 +105,7 @@ export function useUpdateItemStatus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.items.list.path] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
       toast({
         title: "Status Updated",
         description: "Item status has been changed successfully.",
