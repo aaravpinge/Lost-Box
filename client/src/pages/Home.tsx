@@ -65,7 +65,7 @@ export default function Home() {
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
                 <div className="absolute -inset-2 bg-white/20 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-40 transition duration-1000"></div>
-                <div className="relative glass rounded-2xl p-2 flex items-center shadow-2xl">
+                <div className="relative bg-white rounded-2xl p-2 flex items-center shadow-2xl border border-slate-200">
                   <div className="absolute left-6 pointer-events-none">
                     <Search className="h-6 w-6 text-primary/60" />
                   </div>
@@ -81,17 +81,17 @@ export default function Home() {
 
               <div className="flex gap-4 w-full md:w-auto">
                 <motion.div
-                  className="flex-1 md:w-32 glass rounded-2xl p-4 text-center border-white/30"
+                  className="flex-1 md:w-32 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-4 text-center"
                   whileHover={{ y: -5 }}
                 >
                   <div className="text-3xl font-black text-white leading-none mb-1">{stats?.totalItems ?? 0}</div>
                   <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Active Items</div>
                 </motion.div>
                 <motion.div
-                  className="flex-1 md:w-32 glass rounded-2xl p-4 text-center border-white/30"
+                  className="flex-1 md:w-32 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-4 text-center"
                   whileHover={{ y: -5 }}
                 >
-                  <div className="text-3xl font-black text-secondary leading-none mb-1 text-glow">{stats?.claimedItems ?? 0}</div>
+                  <div className="text-3xl font-black text-secondary leading-none mb-1">{stats?.claimedItems ?? 0}</div>
                   <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Reunited</div>
                 </motion.div>
               </div>
@@ -154,8 +154,8 @@ export default function Home() {
               variant={selectedCategory === category ? "default" : "outline"}
               onClick={() => setSelectedCategory(category)}
               className={cn(
-                "rounded-full font-bold text-xs shrink-0 shadow-sm backdrop-blur-sm gap-2 transition-all",
-                selectedCategory === category ? "" : "border-white/40 bg-white/60 hover:bg-white text-slate-700"
+                "rounded-full font-bold text-xs shrink-0 shadow-sm gap-2 transition-all",
+                selectedCategory === category ? "" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
               )}
             >
               {getCategoryIcon(category)}
@@ -287,7 +287,7 @@ function ItemGridSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-        <div key={i} className="rounded-2xl overflow-hidden glass border-slate-200">
+        <div key={i} className="rounded-2xl overflow-hidden bg-white border border-slate-200">
           <Skeleton className="w-full aspect-[2.2/1] rounded-none bg-slate-200" />
           <div className="p-6">
             <Skeleton className="w-24 h-3 mb-4 rounded-full bg-slate-200" />

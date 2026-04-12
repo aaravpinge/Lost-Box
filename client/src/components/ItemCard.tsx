@@ -161,7 +161,7 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
                 Reunite with Student
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md rounded-2xl glass border-slate-200/50 shadow-2xl">
+            <DialogContent className="sm:max-w-md rounded-2xl bg-white border-slate-200 shadow-2xl">
               <DialogHeader>
                 <DialogTitle className="font-black text-xl text-slate-800">Confirm Reunion</DialogTitle>
                 <DialogDescription className="font-medium text-slate-500 text-sm">

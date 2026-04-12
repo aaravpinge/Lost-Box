@@ -124,7 +124,7 @@ export function ReportForm({ type }: ReportFormProps) {
         <motion.div 
           initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="glass-dark p-12 rounded-[2.5rem] text-center shadow-[0_0_50px_rgba(255,255,255,0.1)] border-white/20 max-w-sm mx-4"
+          className="bg-slate-900 border border-slate-700 p-12 rounded-[2.5rem] text-center shadow-[0_0_50px_rgba(255,255,255,0.1)] max-w-sm mx-4"
         >
           <div className="w-24 h-24 bg-primary rounded-full mx-auto mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(100,100,250,0.5)] pulse-gold">
             <motion.div
@@ -135,7 +135,7 @@ export function ReportForm({ type }: ReportFormProps) {
               <Loader2 className="w-12 h-12 text-white animate-spin duration-[3000ms]" />
             </motion.div>
           </div>
-          <h2 className="text-3xl font-black text-white mb-2 tracking-tighter uppercase italic text-glow">
+          <h2 className="text-3xl font-black text-white mb-2 tracking-tight">
             {type === "found" ? "Campus Hero!" : "Report Sent!"}
           </h2>
           <p className="text-slate-300 text-sm font-medium leading-relaxed">
@@ -214,7 +214,7 @@ export function ReportForm({ type }: ReportFormProps) {
                       </FormControl>
                       <SelectContent className="rounded-2xl border-slate-300 shadow-2xl bg-white">
                         {LOCATIONS.map((loc) => (
-                          <SelectItem key={loc} value={loc} className="rounded-lg py-2 cursor-pointer text-sm text-slate-200 focus:bg-primary/20">
+                          <SelectItem key={loc} value={loc} className="rounded-lg py-2 cursor-pointer text-sm text-slate-700 focus:bg-primary/10">
                             {loc}
                           </SelectItem>
                         ))}
@@ -239,7 +239,7 @@ export function ReportForm({ type }: ReportFormProps) {
                       </FormControl>
                       <SelectContent className="rounded-2xl border-slate-300 shadow-2xl bg-white">
                         {CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat} className="rounded-lg py-2 cursor-pointer text-sm text-slate-200 focus:bg-primary/20">
+                          <SelectItem key={cat} value={cat} className="rounded-lg py-2 cursor-pointer text-sm text-slate-700 focus:bg-primary/10">
                             {cat}
                           </SelectItem>
                         ))}
@@ -262,7 +262,7 @@ export function ReportForm({ type }: ReportFormProps) {
                           <Button
                             variant={"outline"}
                             className={cn(
-                              "h-12 w-full pl-3 text-left font-medium rounded-xl border-white/10 bg-white/5 text-sm",
+                              "h-12 w-full pl-3 text-left font-medium rounded-xl border-slate-400 bg-slate-50/80 text-sm",
                               !field.value && "text-slate-500"
                             )}
                           >
@@ -271,7 +271,7 @@ export function ReportForm({ type }: ReportFormProps) {
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 rounded-2xl border-white/10 shadow-2xl" align="start">
+                      <PopoverContent className="w-auto p-0 rounded-2xl border-slate-300 shadow-2xl bg-white" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value ? new Date(field.value) : undefined}
@@ -297,7 +297,7 @@ export function ReportForm({ type }: ReportFormProps) {
                   <FormItem>
                     <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Jane Doe" {...field} className="h-12 rounded-xl border-white/10 bg-white/5 text-sm" />
+                      <Input placeholder="Jane Doe" {...field} className="h-12 rounded-xl border-slate-400 bg-slate-50/80 text-sm placeholder:text-slate-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -311,7 +311,7 @@ export function ReportForm({ type }: ReportFormProps) {
                   <FormItem className="md:col-span-2">
                     <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Official Campus Email (@bwscampus.com)</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="student@bwscampus.com" {...field} className="h-12 rounded-xl border-white/10 bg-white/5 text-sm" />
+                      <Input type="email" placeholder="student@bwscampus.com" {...field} className="h-12 rounded-xl border-slate-400 bg-slate-50/80 text-sm placeholder:text-slate-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -335,7 +335,7 @@ export function ReportForm({ type }: ReportFormProps) {
                           disabled={isUploading}
                           className="h-16 cursor-pointer opacity-0 absolute inset-0 z-20"
                         />
-                        <div className="h-16 flex items-center justify-center border-dashed border-2 border-white/10 bg-white/5 group-hover:bg-white/10 transition-all gap-3 rounded-xl border-spacing-4">
+                        <div className="h-16 flex items-center justify-center border-dashed border-2 border-slate-300 bg-slate-50 group-hover:bg-slate-100 transition-all gap-3 rounded-xl">
                           {isUploading ? (
                             <Loader2 className="w-5 h-5 animate-spin text-primary" />
                           ) : (
@@ -349,7 +349,7 @@ export function ReportForm({ type }: ReportFormProps) {
                         </div>
                       </div>
                       {field.value && (
-                        <div className="relative aspect-video max-h-32 rounded-2xl overflow-hidden border border-white/20 shadow-xl group">
+                        <div className="relative aspect-video max-h-32 rounded-2xl overflow-hidden border border-slate-200 shadow-xl group">
                           <img src={field.value} alt="Preview" className="object-cover w-full h-full" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <Button
@@ -386,23 +386,23 @@ export function ReportForm({ type }: ReportFormProps) {
                 </div>
                 <div className="space-y-3">
                   {potentialMatches.slice(0, 2).map(match => (
-                    <div key={match.id} className="glass p-4 rounded-xl flex items-center justify-between gap-4 border-white/10">
+                    <div key={match.id} className="bg-white border border-primary/10 p-4 rounded-xl flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         {match.imageUrl ? (
                            <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/20 shadow-sm shrink-0">
                              <img src={match.imageUrl} className="w-full h-full object-cover" />
                            </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
-                            <AlertCircle className="w-4 h-4 text-white/20" />
+                          <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0">
+                            <AlertCircle className="w-4 h-4 text-slate-300" />
                           </div>
                         )}
                         <div>
-                          <p className="font-black text-[11px] text-white uppercase tracking-tight">{match.description}</p>
+                          <p className="font-black text-[11px] text-slate-800 uppercase tracking-tight">{match.description}</p>
                           <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-0.5">{match.location}</p>
                         </div>
                       </div>
-                      <a href={`mailto:${match.contactEmail}`} className="text-[9px] font-black uppercase tracking-[0.2em] text-white bg-primary hover:bg-primary/80 px-4 py-2.5 rounded-lg shadow-lg shadow-primary/20 transition-all border border-white/10 active:scale-95">
+                      <a href={`mailto:${match.contactEmail}`} className="text-[9px] font-black uppercase tracking-[0.2em] text-white bg-primary hover:bg-primary/80 px-4 py-2.5 rounded-lg shadow-lg shadow-primary/20 transition-all active:scale-95">
                         Contact
                       </a>
                     </div>
@@ -413,7 +413,7 @@ export function ReportForm({ type }: ReportFormProps) {
 
             <Button
               type="submit"
-              className="w-full h-14 text-xs font-black uppercase tracking-[0.2em] bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(37,99,235,0.3)] rounded-2xl transition-all active:scale-[0.97] border border-white/10"
+              className="w-full h-14 text-xs font-black uppercase tracking-[0.2em] bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 rounded-2xl transition-all active:scale-[0.97]"
               disabled={isPending || isUploading}
             >
               {isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
