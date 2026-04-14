@@ -51,7 +51,7 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center gap-3">
-            <a href="mailto:apinge2027@bwscampus.com?subject=Lost Box App Feedback&body=Device/Browser:%0D%0A%0D%0ABug Description/Error:%0D%0A%0D%0AFeature Request:%0D%0A">
+            <a href="mailto:apinge2027@brentwoodcampus.com?subject=Lost Box App Feedback&body=Device/Browser:%0D%0A%0D%0ABug Description/Error:%0D%0A%0D%0AFeature Request:%0D%0A">
               <Button
                 type="button"
                 variant="outline"

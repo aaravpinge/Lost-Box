@@ -40,7 +40,7 @@ function Router() {
 
             <div className="text-center md:text-right">
               <p className="text-xs font-bold text-slate-400 tracking-widest uppercase mb-1">Items Unclaimed Over 30 Days are Donated</p>
-              <p className="text-[10px] font-medium text-slate-400 italic">© {new Date().getFullYear()} BWS. All rights reserved.</p>
+              <p className="text-[10px] font-medium text-slate-400 italic">© {new Date().getFullYear()} Brentwood. All rights reserved.</p>
             </div>
           </div>
         </div>
