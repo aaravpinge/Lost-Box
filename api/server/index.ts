@@ -153,7 +153,7 @@ export const initPromise = (async () => {
 
   // Force create Admin user
   try {
-    const adminEmail = "admin@brentwoodcampus.com";
+    const adminEmail = "admin@bwscampus.com";
     const { storage } = await import("./storage.js");
     const adminUser = await storage.getUserByEmail(adminEmail);
     
@@ -169,14 +169,14 @@ export const initPromise = (async () => {
         lastName: "Administrator",
         isAdmin: "true",
       });
-      log("SECURITY: Admin user 'admin@brentwoodcampus.com' created successfully.");
+      log("SECURITY: Admin user 'admin@bwscampus.com' created successfully.");
     } else {
       // Ensure existing admin has the correct password and admin status
       await storage.updateUser(adminUser.id, {
         password: hashedPassword,
         isAdmin: "true"
       });
-      log("SECURITY: Admin user 'admin@brentwoodcampus.com' confirmed and password reset to 'admin123'.");
+      log("SECURITY: Admin user 'admin@bwscampus.com' confirmed and password reset to 'admin123'.");
     }
   } catch (err) {
     log(`Warning: Admin initialization error: ${err}`);

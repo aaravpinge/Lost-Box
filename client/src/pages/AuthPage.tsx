@@ -102,7 +102,7 @@ export default function AuthPage() {
                                     name="email"
                                     type="email"
                                     required
-                                    placeholder="admin@brentwoodcampus.com"
+                                    placeholder="admin@bwscampus.com"
                                     className="h-14 rounded-xl border-slate-200 bg-slate-50/50 focus:ring-primary/20 font-medium"
                                 />
                             </div>

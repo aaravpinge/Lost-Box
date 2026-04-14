@@ -104,7 +104,7 @@ export async function registerRoutes(
         description: "Blue water bottle",
         location: "Gym",
         contactName: "Coach Smith",
-        contactEmail: "smith@brentwoodcampus.com",
+        contactEmail: "smith@bwscampus.com",
         dateFound: new Date().toISOString(),
         dateLost: null,
         category: "Water Bottles"
@@ -114,7 +114,7 @@ export async function registerRoutes(
         description: "Math textbook",
         location: "Library",
         contactName: "Jane Doe",
-        contactEmail: "jane@brentwoodcampus.com",
+        contactEmail: "jane@bwscampus.com",
         dateLost: new Date().toISOString(),
         dateFound: null,
         category: "Books"
@@ -126,7 +126,7 @@ export async function registerRoutes(
 
   // Seed admin user
   try {
-    const adminEmail = "admin@brentwoodcampus.com";
+    const adminEmail = "admin@bwscampus.com";
     const adminUser = await storage.getUserByEmail(adminEmail);
     const crypto = await import("crypto");
     const hashedPassword = crypto.scryptSync("admin123", "salt", 64).toString("hex");
@@ -139,13 +139,13 @@ export async function registerRoutes(
         lastName: "User",
         isAdmin: "true",
       });
-      log("Admin user created: admin@brentwoodcampus.com / admin123");
+      log("Admin user created: admin@bwscampus.com / admin123");
     } else if (!adminUser.password || adminUser.isAdmin !== "true") {
       await storage.updateUser(adminUser.id, {
         password: hashedPassword,
         isAdmin: "true"
       });
-      log("Admin user updated: admin@brentwoodcampus.com / admin123");
+      log("Admin user updated: admin@bwscampus.com / admin123");
     }
   } catch (err) {
     log(`Warning: Admin user initialization skipped: ${err}`);
