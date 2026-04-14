@@ -1,4 +1,5 @@
-import { Switch, Route } from "wouter";
+import { useEffect } from "react";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -13,6 +14,18 @@ import NotFound from "@/pages/not-found";
 import { AnimatePresence, motion } from "framer-motion";
 
 function Router() {
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const navEntries = window.performance.getEntriesByType("navigation");
+    const isReload = navEntries.length > 0 && (navEntries[0] as PerformanceNavigationTiming).type === "reload";
+    
+    // Redirect to home if it's a page reload, unless they are on the admin/auth area
+    if (isReload && window.location.pathname !== "/admin" && window.location.pathname !== "/auth") {
+      setLocation("/");
+    }
+  }, [setLocation]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navigation />
