@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useItems, useUpdateItemStatus, useDeleteItem } from "@/hooks/use-items";
 import { useAuth } from "@/hooks/use-auth";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import {
   Table,
   TableBody,
@@ -28,7 +28,9 @@ import {
   Search,
   Loader2,
   Filter,
-  Clock
+  Clock,
+  Package,
+  AlertCircle
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
@@ -75,6 +77,16 @@ export default function Admin() {
     }
   };
 
+  // Metrics calculation
+  const totalItems = items?.length || 0;
+  const lostCount = items?.filter(i => i.type === 'lost').length || 0;
+  const foundCount = items?.filter(i => i.type === 'found').length || 0;
+  const claimedCount = items?.filter(i => i.status === 'claimed' || i.status === 'retrieved').length || 0;
+  const itemsOver30Days = items?.filter(i => {
+    const baseDate = new Date(i.dateReported || i.dateLost || i.dateFound || new Date());
+    return differenceInDays(new Date(), baseDate) > 30 && i.status !== 'claimed' && i.status !== 'retrieved' && i.status !== 'donated';
+  }).length || 0;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header Section */}
@@ -107,8 +119,52 @@ export default function Admin() {
         </div>
       </section>
 
+      {/* Dashboard Metrics Row */}
+      <div className="max-w-7xl mx-auto px-8 relative z-20 -mt-8 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card className="bg-white/90 backdrop-blur border border-slate-100 shadow-xl p-5 rounded-[1.5rem] hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 bg-slate-100 rounded-lg"><Package className="w-4 h-4 text-slate-500" /></div>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total</h3>
+            </div>
+            <p className="text-3xl font-black text-slate-800 tracking-tighter">{totalItems}</p>
+          </Card>
+          <Card className="bg-white/90 backdrop-blur border border-slate-100 shadow-xl p-5 rounded-[1.5rem] hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 bg-rose-50 rounded-lg"><AlertCircle className="w-4 h-4 text-rose-500" /></div>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Lost</h3>
+            </div>
+            <p className="text-3xl font-black text-slate-800 tracking-tighter">{lostCount}</p>
+          </Card>
+          <Card className="bg-white/90 backdrop-blur border border-slate-100 shadow-xl p-5 rounded-[1.5rem] hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 bg-primary/10 rounded-lg"><Search className="w-4 h-4 text-primary" /></div>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Found</h3>
+            </div>
+            <p className="text-3xl font-black text-slate-800 tracking-tighter">{foundCount}</p>
+          </Card>
+          <Card className="bg-white/90 backdrop-blur border border-slate-100 shadow-xl p-5 rounded-[1.5rem] hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 bg-emerald-50 rounded-lg"><CheckCircle className="w-4 h-4 text-emerald-500" /></div>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Claimed</h3>
+            </div>
+            <p className="text-3xl font-black text-slate-800 tracking-tighter">{claimedCount}</p>
+          </Card>
+          <Card className="bg-gradient-to-br from-rose-50 to-red-50 border border-rose-100 shadow-xl p-5 rounded-[1.5rem] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute -right-6 -top-6 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+               <Clock className="w-32 h-32 text-rose-600" />
+            </div>
+            <div className="relative z-10 flex items-center gap-2 mb-2">
+              <div className="p-1.5 bg-white/60 shadow-sm rounded-lg backdrop-blur-md"><Clock className="w-4 h-4 text-rose-600" /></div>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-rose-500">&gt; 30 Days (Donate)</h3>
+            </div>
+            <p className="relative z-10 text-3xl font-black text-rose-600 tracking-tighter">{itemsOver30Days}</p>
+          </Card>
+        </div>
+      </div>
+
       {/* Table Section */}
-      <div className="max-w-7xl mx-auto p-8 relative z-20">
+      <div className="max-w-7xl mx-auto px-8 pb-8 relative z-20">
         <Card className="premium-card overflow-hidden min-h-[600px]">
           <Tabs defaultValue="all" className="w-full">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
