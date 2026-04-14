@@ -53,7 +53,7 @@ export default function Home() {
                 <span className="text-white opacity-90"> Let's find it.</span>
               </h1>
               <p className="text-sm md:text-base text-white/80 mb-6 max-w-2xl mx-auto leading-relaxed font-bold">
-                Brentwood School Automated Lost and Found System
+                Brentwood School's Automated Lost and Found System
               </p>
             </motion.div>
 
