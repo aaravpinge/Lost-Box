@@ -90,7 +90,7 @@ export function useUpload(options: UseUploadOptions = {}) {
    * Upload a file directly to the presigned URL.
    */
   const uploadToPresignedUrl = useCallback(
-    async (file: File, uploadURL: string): Promise<void> => {
+    async (file: File, uploadURL: string): Promise<string> => {
       const response = await fetch(uploadURL, {
         method: "PUT",
         body: file,
@@ -102,6 +102,8 @@ export function useUpload(options: UseUploadOptions = {}) {
       if (!response.ok) {
         throw new Error("Failed to upload file to storage");
       }
+      const data = await response.json();
+      return data.url;
     },
     []
   );
@@ -125,7 +127,9 @@ export function useUpload(options: UseUploadOptions = {}) {
 
         // Step 2: Upload file directly to presigned URL
         setProgress(30);
-        await uploadToPresignedUrl(file, uploadResponse.uploadURL);
+        const blobUrl = await uploadToPresignedUrl(file, uploadResponse.uploadURL);
+        
+        uploadResponse.objectPath = blobUrl;
 
         setProgress(100);
         options.onSuccess?.(uploadResponse);

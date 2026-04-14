@@ -1,20 +1,7 @@
 import { type Express } from "express";
-import fs from "fs";
-import path from "path";
+import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
-
-const UPLOADS_DIR = process.env.VERCEL
-    ? path.resolve("/tmp", "uploads")
-    : path.resolve(process.cwd(), "uploads");
-
-// Ensure uploads directory exists
-if (!fs.existsSync(UPLOADS_DIR)) {
-    try {
-        fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-    } catch (error) {
-        console.error("Failed to create uploads directory:", error);
-    }
-}
+import path from "path";
 
 export function registerUploadRoutes(app: Express) {
     // Step 1: Request upload URL
@@ -24,13 +11,13 @@ export function registerUploadRoutes(app: Express) {
         const extension = path.extname(name);
         const fileName = `${fileId}${extension}`;
 
-        // In local dev, the upload URL is just our own server
+        // Return the API route where the PUT upload should happen
         const uploadURL = `/api/uploads/upload/${fileName}`;
-        const objectPath = `/uploads/${fileName}`;
 
         res.json({
             uploadURL,
-            objectPath,
+            // objectPath is overridden in Step 2 by the Vercel Blob URL
+            objectPath: "", 
             metadata: {
                 name,
                 contentType,
@@ -38,33 +25,20 @@ export function registerUploadRoutes(app: Express) {
         });
     });
 
-    // Step 2: Handle the PUT upload
-    app.put("/api/uploads/upload/:fileName", (req, res) => {
+    // Step 2: Handle the PUT upload directly to Vercel Blob
+    app.put("/api/uploads/upload/:fileName", async (req, res) => {
         const { fileName } = req.params;
-        const filePath = path.join(UPLOADS_DIR, fileName);
 
-        const writeStream = fs.createWriteStream(filePath);
-        req.pipe(writeStream);
+        try {
+            const blob = await put(`uploads/${fileName}`, req, {
+                access: 'public',
+                token: process.env.BLOB_READ_WRITE_TOKEN
+            });
 
-        writeStream.on("finish", () => {
-            res.sendStatus(200);
-        });
-
-        writeStream.on("error", (err) => {
+            res.status(200).json({ url: blob.url });
+        } catch (err) {
             console.error("Upload error:", err);
-            res.status(500).json({ error: "Failed to save file" });
-        });
-    });
-
-    // Serve uploaded files
-    app.get("/uploads/:fileName", (req, res) => {
-        const { fileName } = req.params;
-        const filePath = path.join(UPLOADS_DIR, fileName);
-
-        if (fs.existsSync(filePath)) {
-            res.sendFile(filePath);
-        } else {
-            res.status(404).send("Not found");
+            res.status(500).json({ error: "Failed to save file to Vercel Blob" });
         }
     });
 }

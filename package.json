@@ -11,6 +11,7 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@vercel/blob": "^0.23.4",
     "@electric-sql/pglite": "^0.3.16",
     "@google-cloud/storage": "^7.18.0",
     "@hookform/resolvers": "^3.10.0",
