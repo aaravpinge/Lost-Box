@@ -30,7 +30,8 @@ import {
   Filter,
   Clock,
   Package,
-  AlertCircle
+  AlertCircle,
+  Download
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
@@ -40,6 +41,7 @@ export default function Admin() {
   const { user, isLoading: userLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
   const { data: items, isLoading: itemsLoading } = useItems(undefined, search);
   const updateStatus = useUpdateItemStatus();
   const deleteItem = useDeleteItem();
@@ -75,6 +77,52 @@ export default function Admin() {
       case 'donated': return 'outline';
       default: return 'secondary';
     }
+  };
+
+  const filteredItems = items?.filter(item => {
+    if (activeTab === "all") return true;
+    if (activeTab === "lost") return item.type === "lost";
+    if (activeTab === "found") return item.type === "found";
+    if (activeTab === "claimed") return item.status === "claimed" || item.status === "retrieved";
+    if (activeTab === "over30") {
+      const baseDate = new Date(item.dateReported || item.dateLost || item.dateFound || new Date());
+      return differenceInDays(new Date(), baseDate) > 30 && item.status !== 'claimed' && item.status !== 'retrieved' && item.status !== 'donated';
+    }
+    return true;
+  });
+
+  const exportToCSV = () => {
+    if (!filteredItems || filteredItems.length === 0) return;
+    
+    const headers = ["ID", "Type", "Description", "Location", "Category", "Status", "Date Reported", "Contact Name", "Contact Email", "Claimed By"];
+    
+    const rows = filteredItems.map(item => [
+      item.id,
+      item.type,
+      `"${item.description?.replace(/"/g, '""') || ''}"`,
+      `"${item.location?.replace(/"/g, '""') || ''}"`,
+      item.category || '',
+      item.status,
+      format(new Date(item.dateReported || new Date()), 'yyyy-MM-dd HH:mm:ss'),
+      `"${item.contactName?.replace(/"/g, '""') || ''}"`,
+      item.contactEmail || '',
+      `"${item.claimedBy?.replace(/"/g, '""') || ''}"`
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `lost-box-export-${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Metrics calculation
@@ -166,16 +214,23 @@ export default function Admin() {
       {/* Table Section */}
       <div className="max-w-7xl mx-auto px-8 pb-8 relative z-20">
         <Card className="premium-card overflow-hidden min-h-[600px]">
-          <Tabs defaultValue="all" className="w-full">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <TabsList className="bg-slate-100/50 p-1 rounded-xl">
-                <TabsTrigger value="all" className="rounded-lg px-6 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">All Reports</TabsTrigger>
-                <TabsTrigger value="lost" className="rounded-lg px-6 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">Lost Reports</TabsTrigger>
-                <TabsTrigger value="found" className="rounded-lg px-6 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">Found Items</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between flex-wrap gap-4">
+              <TabsList className="bg-slate-100/50 p-1 rounded-xl flex-wrap h-auto">
+                <TabsTrigger value="all" className="rounded-lg px-5 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">All Reports</TabsTrigger>
+                <TabsTrigger value="lost" className="rounded-lg px-5 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">Lost Reports</TabsTrigger>
+                <TabsTrigger value="found" className="rounded-lg px-5 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">Found Items</TabsTrigger>
+                <TabsTrigger value="claimed" className="rounded-lg px-5 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">Claimed</TabsTrigger>
+                <TabsTrigger value="over30" className="rounded-lg px-5 py-2 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm">&gt;30 Days</TabsTrigger>
               </TabsList>
+              
+              <Button onClick={exportToCSV} variant="outline" className="rounded-xl font-bold border-slate-200 text-slate-600 hover:bg-slate-50 transition-all text-xs">
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
             </div>
 
-            <TabsContent value="all" className="m-0">
+            <div className="m-0">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -188,7 +243,7 @@ export default function Admin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items?.map((item) => (
+                    {filteredItems?.map((item) => (
                       <TableRow key={item.id} className="group hover:bg-slate-50/80 transition-all border-slate-100 h-24">
                         <TableCell className="px-8">
                           <div className="flex items-center gap-4">
@@ -282,7 +337,7 @@ export default function Admin() {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {items?.length === 0 && (
+                    {filteredItems?.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={5} className="h-64 text-center">
                           <div className="flex flex-col items-center justify-center text-slate-300">
@@ -295,7 +350,7 @@ export default function Admin() {
                   </TableBody>
                 </Table>
               </div>
-            </TabsContent>
+            </div>
           </Tabs>
         </Card>
       </div>
