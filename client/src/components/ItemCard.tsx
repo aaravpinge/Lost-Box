@@ -46,17 +46,6 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
 
   return (
     <Card className="group overflow-hidden bg-white border-slate-200 hover:border-primary/50 hover:shadow-[0_20px_50px_rgba(209,100,52,0.1)] transition-all duration-500 rounded-2xl relative">
-      {/* Type Ribbon */}
-      <div className={cn(
-        "absolute top-0 left-0 w-16 h-16 overflow-hidden z-20 pointer-events-none",
-      )}>
-        <div className={cn(
-          "absolute top-[-5px] left-[-30px] w-24 h-6 text-[10px] font-black uppercase flex items-center justify-center -rotate-45 text-white shadow-sm",
-          isFound ? "bg-primary" : "bg-secondary"
-        )}>
-          {item.type}
-        </div>
-      </div>
 
       <div className="aspect-[2.2/1] w-full bg-slate-100 relative overflow-hidden">
         {item.imageUrl ? (
@@ -87,9 +76,7 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
           <Badge variant="outline" className="px-3 py-1 font-bold text-[10px] uppercase tracking-wider shadow-lg border-white/50 bg-white/80 backdrop-blur-md text-slate-700">
             {item.category || "Other"}
           </Badge>
-          <Badge className={cn("px-3 py-1 font-bold text-[10px] uppercase tracking-wider shadow-lg border-none", statusColors[item.status as keyof typeof statusColors])}>
-            {item.status}
-          </Badge>
+
           {isFound && item.status === 'reported' && (
             <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur-md bg-white/40 text-rose-600 border border-rose-200 shadow-sm transition-all group-hover:bg-rose-500 group-hover:text-white">
               {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
