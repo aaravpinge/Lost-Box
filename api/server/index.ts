@@ -137,6 +137,7 @@ export const initPromise = (async () => {
 
         await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT 'Other'`);
         await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS claimed_by text`);
+        await db.execute(sql`ALTER TABLE items ADD COLUMN IF NOT EXISTS additional_details text`);
         
         // Final column check
         await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS password text`);
