@@ -8,6 +8,7 @@ export const items = pgTable("items", {
   id: serial("id").primaryKey(),
   type: text("type").notNull(), // 'lost' | 'found'
   description: text("description").notNull(),
+  additionalDetails: text("additional_details"),
   location: text("location").notNull(),
   dateReported: timestamp("date_reported").defaultNow().notNull(),
   dateLost: timestamp("date_lost"), // When it was lost
@@ -28,6 +29,7 @@ export const insertItemSchema = createInsertSchema(items).omit({
   status: true
 }).extend({
   description: z.string().min(1, "Description is required"),
+  additionalDetails: z.string().optional().nullable(),
   category: z.string().min(1, "Category is required"),
   location: z.string().min(1, "Location is required"),
   contactName: z.string().min(1, "Name is required"),

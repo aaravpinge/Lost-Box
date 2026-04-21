@@ -56,7 +56,7 @@ export function Navigation() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="gap-2 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-600 font-black text-[10px] uppercase tracking-widest h-10 px-4 hover:bg-emerald-100 hover:text-emerald-700 hover:border-emerald-300 transition-all shadow-sm hidden sm:flex"
+                className="gap-2 rounded-xl border-slate-200 bg-white text-slate-800 font-black text-[10px] uppercase tracking-widest h-10 px-4 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm hidden sm:flex"
               >
                 <MessageSquare className="w-4 h-4" />
                 Give Feedback

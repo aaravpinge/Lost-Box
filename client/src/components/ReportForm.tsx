@@ -41,6 +41,7 @@ export function ReportForm({ type }: ReportFormProps) {
     defaultValues: {
       type,
       description: "",
+      additionalDetails: "",
       category: "",
       location: "",
       contactName: "",
@@ -196,6 +197,20 @@ export function ReportForm({ type }: ReportFormProps) {
                     </div>
                     <FormControl>
                       <Input placeholder="e.g. Blue Hydro Flask, Calculus Textbook..." {...field} className="h-12 rounded-xl border-slate-400 bg-slate-50/80 text-sm focus:bg-white transition-all placeholder:text-slate-500" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="additionalDetails"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Provide any additional details..." {...field} value={field.value || ""} className="min-h-[100px] rounded-xl border-slate-400 bg-slate-50/80 text-sm focus:bg-white transition-all placeholder:text-slate-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

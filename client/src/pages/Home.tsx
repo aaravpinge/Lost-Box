@@ -100,40 +100,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Statistics / Info Bar */}
-      <section className="bg-white border-b border-primary/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm border border-primary/10">
-                <Search className="w-5 h-5 text-primary group-hover:text-white" />
-              </div>
-              <div>
-                <h3 className="font-black text-slate-900 text-[11px] uppercase tracking-wider mb-0.5">Advanced Search</h3>
-                <p className="text-[11px] text-slate-500 leading-tight font-medium">Scan our real-time database.</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-secondary/5 flex items-center justify-center shrink-0 group-hover:bg-secondary group-hover:text-white transition-all duration-500 shadow-sm border border-secondary/10">
-                <HelpCircle className="w-5 h-5 text-secondary group-hover:text-white" />
-              </div>
-              <div>
-                <h3 className="font-black text-slate-900 text-[11px] uppercase tracking-wider mb-0.5">Instant Reports</h3>
-                <p className="text-[11px] text-slate-500 leading-tight font-medium">Post a report in seconds.</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-sm border border-emerald-100">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 group-hover:text-white" />
-              </div>
-              <div>
-                <h3 className="font-black text-slate-900 text-[11px] uppercase tracking-wider mb-0.5">Easy Reunions</h3>
-                <p className="text-[11px] text-slate-500 leading-tight font-medium">Claim from the front office.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20">
         {/* Category Filters */}
