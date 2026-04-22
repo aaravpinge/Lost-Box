@@ -53,7 +53,7 @@ export default function Home() {
                 <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
                   <LayoutDashboard className="w-5 h-5" />
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none">
+                <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none">
                   Live Feed
                 </h1>
               </div>
