@@ -30,7 +30,7 @@ export function Navigation() {
               </div>
             </Link>
 
-            <div className="hidden md:flex ml-14 space-x-3">
+            <div className="hidden md:flex items-center ml-14 space-x-3">
               {[
                 { label: "Dashboard", href: "/" },
                 { label: "Report Lost", href: "/report/lost" },
@@ -38,7 +38,7 @@ export function Navigation() {
               ].map((link) => (
                 <Link key={link.href} href={link.href}>
                   <span className={cn(
-                    "px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-300 cursor-pointer",
+                    "inline-flex items-center justify-center px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-300 cursor-pointer",
                     isActive(link.href)
                       ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105"
                       : "text-slate-500 hover:bg-slate-100/80 hover:text-primary hover:scale-[1.02] active:scale-95"
