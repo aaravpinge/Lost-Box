@@ -41,19 +41,19 @@ export default function Home() {
       {/* Live Feed Section (Moved Up) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8 md:pt-14 md:pb-12 relative z-20">
         
-        {/* Row 1: Title + Search */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+        {/* Row 1: Title + Stats */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+          <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
-                  <LayoutDashboard className="w-5 h-5" />
+                <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/30">
+                  <LayoutDashboard className="w-6 h-6" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none">
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none">
                   Live Feed
                 </h1>
               </div>
@@ -63,32 +63,41 @@ export default function Home() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               transition={{ delay: 0.3 }}
-              className="flex gap-5 sm:ml-2 sm:border-l sm:border-slate-200/60 sm:pl-6"
+              className="flex gap-8 sm:ml-4 sm:border-l sm:border-slate-200 sm:pl-8"
             >
-              <div>
-                 <div className="text-lg font-black text-primary leading-none">{stats?.totalItems ?? 0}</div>
-                 <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Active Cases</div>
+              <div className="text-center sm:text-left">
+                 <div className="text-2xl font-black text-primary leading-none">{stats?.totalItems ?? 0}</div>
+                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Active Cases</div>
               </div>
-              <div>
-                 <div className="text-lg font-black text-secondary leading-none">{stats?.claimedItems ?? 0}</div>
-                 <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Reunited</div>
+              <div className="text-center sm:text-left">
+                 <div className="text-2xl font-black text-secondary leading-none">{stats?.claimedItems ?? 0}</div>
+                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Reunited</div>
               </div>
             </motion.div>
           </div>
+        </div>
 
-          <div className="relative group w-full lg:w-96 shrink-0 z-30">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <Search className="w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+        {/* Row 2: Search Registry Box */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="max-w-2xl mx-auto mb-16 relative group"
+        >
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-[2.5rem] blur opacity-25 group-focus-within:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative">
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none">
+              <Search className="w-6 h-6 text-slate-400 group-focus-within:text-primary transition-colors" />
             </div>
             <Input
               type="text"
-              placeholder="Search the registry..."
-              className="w-full h-12 pl-11 pr-4 text-sm rounded-2xl border border-slate-200/60 bg-white focus:ring-2 focus:ring-primary/20 transition-all font-medium text-slate-900 shadow-sm hover:border-slate-300"
+              placeholder="Search the registry for items, locations, or descriptions..."
+              className="w-full h-16 pl-16 pr-8 text-lg rounded-[2rem] border-2 border-slate-200 bg-white/80 backdrop-blur-xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-medium text-slate-900 shadow-2xl hover:border-slate-300 placeholder:text-slate-400"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-        </div>
+        </motion.div>
 
         <Tabs defaultValue="found" className="w-full">
           {/* Row 2: View Tabs */}
