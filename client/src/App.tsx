@@ -14,7 +14,16 @@ import NotFound from "@/pages/not-found";
 import { AnimatePresence, motion } from "framer-motion";
 
 function Router() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    // Disable browser automatic scroll restoration
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    // Scroll to top when route changes or component mounts
+    window.scrollTo(0, 0);
+  }, [location]);
 
   useEffect(() => {
     const navEntries = window.performance.getEntriesByType("navigation");
