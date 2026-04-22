@@ -163,11 +163,12 @@ export function ReportForm({ type }: ReportFormProps) {
   return (
     <div className="pt-2 pb-12 px-4 md:pt-4 bg-slate-50/50 min-h-screen">
       <Card className="max-w-2xl mx-auto bg-white border-slate-300 shadow-2xl rounded-2xl overflow-hidden mb-12">
-        <div className="bg-primary py-8 px-8 text-center">
-          <CardTitle className="text-2xl font-bold text-white tracking-tight mb-1 uppercase">
+        <div className="bg-primary py-12 md:py-16 px-8 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent pointer-events-none"></div>
+          <CardTitle className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-2 uppercase relative z-10 drop-shadow-md">
             Submit {type === "lost" ? "Lost" : "Found"} Item
           </CardTitle>
-          <CardDescription className="text-white/80 font-medium text-xs">
+          <CardDescription className="text-white/90 font-bold text-sm max-w-md mx-auto relative z-10">
             {type === "found" 
               ? "Enter the details below to help others find their item."
               : "Enter the details below to help us find your item."}
