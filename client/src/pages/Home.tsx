@@ -126,44 +126,45 @@ export default function Home() {
         </Tabs>
       </section>
 
-      {/* Advanced Search & Stats Section (Moved Down) */}
-      <section className="bg-primary py-16 md:py-24 relative overflow-hidden mt-8 md:mt-12 rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
-        <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none"></div>
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-[30rem] h-[30rem] bg-secondary/10 rounded-full blur-3xl translate-y-1/3 translate-x-1/3"></div>
-        
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      {/* Advanced Search & Stats Section (Slimmer, Nice Look) */}
+      <section className="bg-primary/5 mt-12 py-10 relative border-t border-primary/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-200/60 flex flex-col lg:flex-row items-center gap-6 justify-between max-w-5xl mx-auto"
           >
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tighter drop-shadow-md">
-              Looking for something specific?
-            </h2>
-            <p className="text-sm md:text-base text-white/80 font-bold mb-10">Search across all reported lost, found, and reunited items.</p>
+            <div className="flex items-center gap-4 pl-2 shrink-0">
+               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Search className="w-5 h-5 text-primary" />
+               </div>
+               <div className="flex flex-col">
+                  <h2 className="text-xl font-black text-slate-900 tracking-tighter mb-0.5 leading-none">
+                    Search Registry
+                  </h2>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Global Database</p>
+               </div>
+            </div>
             
-            <div className="relative bg-white/10 p-2 rounded-[2rem] flex items-center shadow-2xl border border-white/20 backdrop-blur-xl max-w-3xl mx-auto mb-16 ring-4 ring-white/5">
-              <div className="absolute left-6 pointer-events-none">
-                <Search className="h-6 w-6 text-white/70" />
-              </div>
+            <div className="w-full lg:max-w-md relative group flex-1">
               <Input
                 type="text"
-                placeholder="e.g., Blue Hydroflask, Apple Pencil..."
-                className="pl-14 h-16 md:h-20 text-lg md:text-xl rounded-2xl border-none bg-transparent text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/30 transition-all font-medium"
+                placeholder="e.g., Blue Hydroflask..."
+                className="w-full h-14 pl-5 pr-4 text-sm rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all font-medium text-slate-900 shadow-inner group-hover:border-primary/20"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
-            <div className="flex flex-row justify-center gap-6">
-              <div className="flex-1 md:flex-none md:w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 md:p-8 shadow-xl hover:-translate-y-1 transition-transform">
-                <div className="text-4xl md:text-5xl font-black text-white leading-none mb-3">{stats?.totalItems ?? 0}</div>
-                <div className="text-[10px] font-black text-white/70 uppercase tracking-widest">Active Cases</div>
+            <div className="flex flex-row gap-2 w-full lg:w-auto shrink-0 pr-2">
+              <div className="flex items-center gap-3 bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100 flex-1 lg:flex-none">
+                <div className="text-2xl font-black text-primary leading-none">{stats?.totalItems ?? 0}</div>
+                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">Active<br/>Cases</div>
               </div>
-              <div className="flex-1 md:flex-none md:w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 md:p-8 shadow-xl hover:-translate-y-1 transition-transform">
-                <div className="text-4xl md:text-5xl font-black text-secondary leading-none mb-3">{stats?.claimedItems ?? 0}</div>
-                <div className="text-[10px] font-black text-secondary/80 uppercase tracking-widest">Reunited</div>
+              <div className="flex items-center gap-3 bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100 flex-1 lg:flex-none">
+                <div className="text-2xl font-black text-secondary leading-none">{stats?.claimedItems ?? 0}</div>
+                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">Items<br/>Reunited</div>
               </div>
             </div>
           </motion.div>
