@@ -37,117 +37,60 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative bg-primary border-b border-primary-border pb-8 pt-8 md:pb-12 md:pt-12">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent pointer-events-none"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3 tracking-normal leading-[1.1] drop-shadow-2xl">
-                Lost something?
-                <span className="text-white opacity-90"> Let's find it.</span>
-              </h1>
-              <p className="text-sm md:text-base text-white/80 mb-6 max-w-2xl mx-auto leading-relaxed font-bold">
-                Brentwood School's Automated Lost and Found System
-              </p>
-            </motion.div>
-
-            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-              <motion.div
-                className="relative flex-1 max-w-xl group w-full"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-              >
-                <div className="absolute -inset-2 bg-white/20 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-40 transition duration-1000"></div>
-                <div className="relative bg-white rounded-2xl p-2 flex items-center shadow-2xl border border-slate-200">
-                  <div className="absolute left-6 pointer-events-none">
-                    <Search className="h-6 w-6 text-primary/60" />
-                  </div>
-                  <Input
-                    type="text"
-                    placeholder="What are you looking for?"
-                    className="pl-14 h-14 text-lg rounded-xl border-none bg-white/50 focus:bg-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 transition-all"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-              </motion.div>
-
-              <div className="flex gap-4 w-full md:w-auto">
-                <motion.div
-                  className="flex-1 md:w-32 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-4 text-center"
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="text-3xl font-black text-white leading-none mb-1">{stats?.totalItems ?? 0}</div>
-                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Active Items</div>
-                </motion.div>
-                <motion.div
-                  className="flex-1 md:w-32 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-4 text-center"
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="text-3xl font-black text-secondary leading-none mb-1">{stats?.claimedItems ?? 0}</div>
-                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Reunited</div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20">
-        {/* Category Filters */}
-        <div className="flex overflow-x-auto pb-4 mb-2 gap-2 scrollbar-none">
-          <Button
-            variant={selectedCategory === "All" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("All")}
-            className={cn(
-              "rounded-full font-black text-xs shrink-0 shadow-sm transition-all",
-              selectedCategory === "All" ? "" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
-            )}
+    <div className="min-h-screen bg-slate-50/50">
+      {/* Live Feed Section (Moved Up) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-20">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            All Items
-          </Button>
-          {CATEGORIES.map((category) => (
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                <LayoutDashboard className="w-5 h-5" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none">
+                Live Feed
+              </h1>
+            </div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-14">Brentwood School Lost & Found</p>
+          </motion.div>
+          
+          <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none w-full md:w-auto">
             <Button
-              key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
-              onClick={() => setSelectedCategory(category)}
+              variant={selectedCategory === "All" ? "default" : "outline"}
+              onClick={() => setSelectedCategory("All")}
               className={cn(
-                "rounded-full font-bold text-xs shrink-0 shadow-sm gap-2 transition-all",
-                selectedCategory === category ? "" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm transition-all h-10 px-5",
+                selectedCategory === "All" ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
               )}
             >
-              {getCategoryIcon(category)}
-              {category}
+              All Items
             </Button>
-          ))}
+            {CATEGORIES.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category)}
+                className={cn(
+                  "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm gap-2 transition-all h-10 px-5",
+                  selectedCategory === category ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
+                )}
+              >
+                {getCategoryIcon(category)}
+                {category}
+              </Button>
+            ))}
+          </div>
         </div>
 
         <Tabs defaultValue="found" className="w-full">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-8 bg-white/50 backdrop-blur-md p-5 rounded-[2rem] border border-white shadow-[0_20px_50px_rgba(0,0,0,0.03)]">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/30">
-                <LayoutDashboard className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-1">
-                  Live Feed
-                </h2>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Real-time status updates</p>
-              </div>
-            </div>
-            <TabsList className="bg-slate-100/80 p-1 rounded-2xl h-auto border border-slate-200/50">
-              <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-found">Found</TabsTrigger>
-              <TabsTrigger value="lost" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-lost">Lost</TabsTrigger>
-              <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-claimed">Claimed</TabsTrigger>
+          <div className="bg-slate-200/50 p-1.5 rounded-2xl inline-flex mb-8 border border-slate-200">
+            <TabsList className="bg-transparent h-auto p-0 gap-2">
+              <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-found">Found</TabsTrigger>
+              <TabsTrigger value="lost" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-rose-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-lost">Lost</TabsTrigger>
+              <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-emerald-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-claimed">Claimed</TabsTrigger>
             </TabsList>
           </div>
 
@@ -155,12 +98,7 @@ export default function Home() {
             {loadingFound ? (
               <ItemGridSkeleton />
             ) : availableFoundItems.length === 0 ? (
-              <EmptyState
-                title="The box is clear"
-                message="No items are currently in the found database. Check back soon."
-                icon={<PackageOpen className="w-12 h-12" />}
-                type="found"
-              />
+              <EmptyState title="The box is clear" message="No items are currently in the found database. Check back soon." icon={<PackageOpen className="w-12 h-12" />} type="found" />
             ) : (
               <ItemGrid items={availableFoundItems} />
             )}
@@ -170,12 +108,7 @@ export default function Home() {
             {loadingLost ? (
               <ItemGridSkeleton />
             ) : activeLostItems.length === 0 ? (
-              <EmptyState
-                title="No active cases"
-                message="All lost items have either been found or no reports have been submitted."
-                icon={<HelpCircle className="w-12 h-12" />}
-                type="lost"
-              />
+              <EmptyState title="No active cases" message="All lost items have either been found or no reports have been submitted." icon={<HelpCircle className="w-12 h-12" />} type="lost" />
             ) : (
               <ItemGrid items={activeLostItems} />
             )}
@@ -185,16 +118,56 @@ export default function Home() {
             {loadingFound ? (
               <ItemGridSkeleton />
             ) : claimedItems.length === 0 ? (
-              <EmptyState
-                title="History is empty"
-                message="Matches will appear here once students claim their items."
-                icon={<CheckCircle2 className="w-12 h-12" />}
-              />
+              <EmptyState title="History is empty" message="Matches will appear here once students claim their items." icon={<CheckCircle2 className="w-12 h-12" />} />
             ) : (
               <ItemGrid items={claimedItems} />
             )}
           </TabsContent>
         </Tabs>
+      </section>
+
+      {/* Advanced Search & Stats Section (Moved Down) */}
+      <section className="bg-primary py-16 md:py-24 relative overflow-hidden mt-8 md:mt-12 rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-[30rem] h-[30rem] bg-secondary/10 rounded-full blur-3xl translate-y-1/3 translate-x-1/3"></div>
+        
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tighter drop-shadow-md">
+              Looking for something specific?
+            </h2>
+            <p className="text-sm md:text-base text-white/80 font-bold mb-10">Search across all reported lost, found, and reunited items.</p>
+            
+            <div className="relative bg-white/10 p-2 rounded-[2rem] flex items-center shadow-2xl border border-white/20 backdrop-blur-xl max-w-3xl mx-auto mb-16 ring-4 ring-white/5">
+              <div className="absolute left-6 pointer-events-none">
+                <Search className="h-6 w-6 text-white/70" />
+              </div>
+              <Input
+                type="text"
+                placeholder="e.g., Blue Hydroflask, Apple Pencil..."
+                className="pl-14 h-16 md:h-20 text-lg md:text-xl rounded-2xl border-none bg-transparent text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/30 transition-all font-medium"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-row justify-center gap-6">
+              <div className="flex-1 md:flex-none md:w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 md:p-8 shadow-xl hover:-translate-y-1 transition-transform">
+                <div className="text-4xl md:text-5xl font-black text-white leading-none mb-3">{stats?.totalItems ?? 0}</div>
+                <div className="text-[10px] font-black text-white/70 uppercase tracking-widest">Active Cases</div>
+              </div>
+              <div className="flex-1 md:flex-none md:w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 md:p-8 shadow-xl hover:-translate-y-1 transition-transform">
+                <div className="text-4xl md:text-5xl font-black text-secondary leading-none mb-3">{stats?.claimedItems ?? 0}</div>
+                <div className="text-[10px] font-black text-secondary/80 uppercase tracking-widest">Reunited</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
     </div>
   );
