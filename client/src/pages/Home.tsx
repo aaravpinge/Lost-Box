@@ -102,7 +102,6 @@ export default function Home() {
               </Button>
             ))}
           </div>
-        </div>
 
         <Tabs defaultValue="found" className="w-full">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-4">
