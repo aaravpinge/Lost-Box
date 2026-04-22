@@ -42,7 +42,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8 md:pt-14 md:pb-12 relative z-20">
         
         {/* Row 1: Header Area (Title + Stats + Search) */}
-        <div className="flex flex-col xl:flex-row justify-between items-center gap-8 mb-12 bg-white/40 p-6 sm:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm backdrop-blur-sm">
+        <div className="flex flex-col xl:flex-row justify-between items-center gap-6 mb-10 bg-white/40 py-4 px-8 rounded-3xl border border-slate-200 shadow-sm backdrop-blur-sm">
           <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
