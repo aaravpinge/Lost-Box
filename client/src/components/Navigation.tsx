@@ -16,21 +16,21 @@ export function Navigation() {
   return (
     <nav className="bg-white sticky top-0 z-50 border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20">
+        <div className="flex justify-between items-center h-24">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-4 group cursor-pointer">
-              <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/50 shadow-lg group-hover:scale-110 transition-transform duration-500">
+              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100 shadow-md group-hover:scale-105 transition-transform duration-500">
                 <img src={schoolLogo} alt="School Logo" className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-2xl tracking-tighter text-slate-900 leading-none group-hover:text-primary transition-colors">
+                <span className="font-black text-3xl tracking-tighter text-slate-900 leading-none group-hover:text-primary transition-colors">
                   Lost Box
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">Brentwood School</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mt-1">Brentwood School</span>
               </div>
             </Link>
 
-            <div className="hidden md:flex ml-12 space-x-2">
+            <div className="hidden md:flex ml-14 space-x-3">
               {[
                 { label: "Dashboard", href: "/" },
                 { label: "Report Lost", href: "/report/lost" },
@@ -38,10 +38,10 @@ export function Navigation() {
               ].map((link) => (
                 <Link key={link.href} href={link.href}>
                   <span className={cn(
-                    "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 cursor-pointer",
+                    "px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-300 cursor-pointer",
                     isActive(link.href)
-                      ? "bg-primary text-white shadow-lg shadow-primary/20"
-                      : "text-slate-500 hover:bg-white hover:text-primary hover:shadow-sm"
+                      ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105"
+                      : "text-slate-500 hover:bg-slate-100/80 hover:text-primary hover:scale-[1.02] active:scale-95"
                   )}>
                     {link.label}
                   </span>
