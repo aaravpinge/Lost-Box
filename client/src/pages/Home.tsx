@@ -74,9 +74,10 @@ export default function Home() {
               </div>
             </motion.div>
           </div>
+        </div>
           
-          <div className="flex overflow-x-auto gap-2 pb-3 pt-1 scrollbar-none w-full min-w-0 md:max-w-[50%] lg:max-w-[60%]">
-            <Button
+        <div className="flex overflow-x-auto gap-2 pb-6 pt-1 scrollbar-none w-full min-w-0 -mt-2">
+          <Button
               variant={selectedCategory === "All" ? "default" : "outline"}
               onClick={() => setSelectedCategory("All")}
               className={cn(
