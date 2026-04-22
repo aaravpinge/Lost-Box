@@ -92,9 +92,8 @@ export default function Home() {
         </div>
 
         <Tabs defaultValue="found" className="w-full">
-          {/* Row 2: Tabs + Categories */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-6 lg:gap-4">
-            
+          {/* Row 2: View Tabs */}
+          <div className="mb-6">
             <div className="bg-slate-200/50 p-1.5 rounded-2xl inline-flex border border-slate-200 w-full md:w-auto overflow-x-auto scrollbar-none shadow-sm shrink-0">
               <TabsList className="bg-transparent h-auto p-0 gap-2 min-w-max">
                 <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-found">Found</TabsTrigger>
@@ -102,34 +101,34 @@ export default function Home() {
                 <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-emerald-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-claimed">Claimed</TabsTrigger>
               </TabsList>
             </div>
+          </div>
 
-            <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none w-full min-w-0">
-               <Button
-                variant={selectedCategory === "All" ? "default" : "outline"}
-                onClick={() => setSelectedCategory("All")}
+          {/* Row 3: Filter Categories */}
+          <div className="flex overflow-x-auto gap-2 pb-8 scrollbar-none w-full min-w-0 pr-4">
+            <Button
+              variant={selectedCategory === "All" ? "default" : "outline"}
+              onClick={() => setSelectedCategory("All")}
+              className={cn(
+                "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm transition-all h-10 px-5",
+                selectedCategory === "All" ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
+              )}
+            >
+              All Items
+            </Button>
+            {CATEGORIES.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category)}
                 className={cn(
-                  "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm transition-all h-10 px-5",
-                  selectedCategory === "All" ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
+                  "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm gap-2 transition-all h-10 px-5",
+                  selectedCategory === category ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
                 )}
               >
-                All Items
+                {getCategoryIcon(category)}
+                {category}
               </Button>
-              {CATEGORIES.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category)}
-                  className={cn(
-                    "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm gap-2 transition-all h-10 px-5",
-                    selectedCategory === category ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
-                  )}
-                >
-                  {getCategoryIcon(category)}
-                  {category}
-                </Button>
-              ))}
-            </div>
-            
+            ))}
           </div>
 
           <TabsContent value="found" className="mt-0 outline-none">
