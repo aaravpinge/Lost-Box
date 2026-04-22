@@ -49,7 +49,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
                   <LayoutDashboard className="w-5 h-5" />
                 </div>
@@ -57,7 +57,6 @@ export default function Home() {
                   Live Feed
                 </h1>
               </div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-14">Brentwood School Lost & Found</p>
             </motion.div>
 
             <motion.div 
