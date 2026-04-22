@@ -18,15 +18,15 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-4 group cursor-pointer">
-              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100 shadow-md group-hover:scale-105 transition-transform duration-500">
+            <Link href="/" className="flex items-center gap-5 group cursor-pointer">
+              <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-100 shadow-lg group-hover:scale-105 transition-transform duration-500">
                 <img src={schoolLogo} alt="School Logo" className="w-full h-full object-cover" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-black text-3xl tracking-tighter text-slate-900 leading-none group-hover:text-primary transition-colors">
+              <div className="flex flex-col justify-center">
+                <span className="font-black text-4xl tracking-tighter text-slate-900 leading-none group-hover:text-primary transition-colors drop-shadow-sm">
                   Lost Box
                 </span>
-                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mt-1">Brentwood School</span>
+                <span className="text-xs font-black uppercase tracking-[0.25em] text-slate-500 mt-1">Brentwood School</span>
               </div>
             </Link>
 

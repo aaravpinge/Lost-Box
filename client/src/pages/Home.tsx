@@ -42,7 +42,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8 md:pt-14 md:pb-12 relative z-20">
         
         {/* Row 1: Title + Search */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -67,11 +67,11 @@ export default function Home() {
               className="flex gap-5 sm:ml-2 sm:border-l sm:border-slate-200/60 sm:pl-6"
             >
               <div>
-                 <div className="text-2xl font-black text-primary leading-none">{stats?.totalItems ?? 0}</div>
+                 <div className="text-lg font-black text-primary leading-none">{stats?.totalItems ?? 0}</div>
                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Active Cases</div>
               </div>
               <div>
-                 <div className="text-2xl font-black text-secondary leading-none">{stats?.claimedItems ?? 0}</div>
+                 <div className="text-lg font-black text-secondary leading-none">{stats?.claimedItems ?? 0}</div>
                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Reunited</div>
               </div>
             </motion.div>
