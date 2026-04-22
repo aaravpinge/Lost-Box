@@ -41,21 +41,39 @@ export default function Home() {
       {/* Live Feed Section (Moved Up) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-20">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
-                <LayoutDashboard className="w-5 h-5" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                  <LayoutDashboard className="w-5 h-5" />
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none">
+                  Live Feed
+                </h1>
               </div>
-              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                Live Feed
-              </h1>
-            </div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-14">Brentwood School Lost & Found</p>
-          </motion.div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-14">Brentwood School Lost & Found</p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              transition={{ delay: 0.3 }}
+              className="flex gap-5 sm:ml-2 sm:border-l sm:border-slate-200/60 sm:pl-6"
+            >
+              <div>
+                 <div className="text-2xl font-black text-primary leading-none">{stats?.totalItems ?? 0}</div>
+                 <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Active Cases</div>
+              </div>
+              <div>
+                 <div className="text-2xl font-black text-secondary leading-none">{stats?.claimedItems ?? 0}</div>
+                 <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Reunited</div>
+              </div>
+            </motion.div>
+          </div>
           
           <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none w-full md:w-auto">
             <Button
@@ -86,12 +104,27 @@ export default function Home() {
         </div>
 
         <Tabs defaultValue="found" className="w-full">
-          <div className="bg-slate-200/50 p-1.5 rounded-2xl inline-flex mb-8 border border-slate-200">
-            <TabsList className="bg-transparent h-auto p-0 gap-2">
-              <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-found">Found</TabsTrigger>
-              <TabsTrigger value="lost" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-rose-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-lost">Lost</TabsTrigger>
-              <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-emerald-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-claimed">Claimed</TabsTrigger>
-            </TabsList>
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-4">
+            <div className="bg-slate-200/50 p-1.5 rounded-2xl inline-flex border border-slate-200 w-full lg:w-auto overflow-x-auto scrollbar-none shadow-sm">
+              <TabsList className="bg-transparent h-auto p-0 gap-2 min-w-max">
+                <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-found">Found</TabsTrigger>
+                <TabsTrigger value="lost" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-rose-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-lost">Lost</TabsTrigger>
+                <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-emerald-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-claimed">Claimed</TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <div className="relative group w-full lg:w-96 shrink-0">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Search className="w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Search the registry..."
+                className="w-full h-12 pl-11 pr-4 text-sm rounded-2xl border border-slate-200/60 bg-white focus:ring-2 focus:ring-primary/20 transition-all font-medium text-slate-900 shadow-sm hover:border-slate-300"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
           </div>
 
           <TabsContent value="found" className="mt-0 outline-none">
@@ -126,50 +159,7 @@ export default function Home() {
         </Tabs>
       </section>
 
-      {/* Advanced Search & Stats Section (Slimmer, Nice Look) */}
-      <section className="bg-primary/5 mt-12 py-10 relative border-t border-primary/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-200/60 flex flex-col lg:flex-row items-center gap-6 justify-between max-w-5xl mx-auto"
-          >
-            <div className="flex items-center gap-4 pl-2 shrink-0">
-               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <Search className="w-5 h-5 text-primary" />
-               </div>
-               <div className="flex flex-col">
-                  <h2 className="text-xl font-black text-slate-900 tracking-tighter mb-0.5 leading-none">
-                    Search Registry
-                  </h2>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Global Database</p>
-               </div>
-            </div>
-            
-            <div className="w-full lg:max-w-md relative group flex-1">
-              <Input
-                type="text"
-                placeholder="e.g., Blue Hydroflask..."
-                className="w-full h-14 pl-5 pr-4 text-sm rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all font-medium text-slate-900 shadow-inner group-hover:border-primary/20"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
 
-            <div className="flex flex-row gap-2 w-full lg:w-auto shrink-0 pr-2">
-              <div className="flex items-center gap-3 bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100 flex-1 lg:flex-none">
-                <div className="text-2xl font-black text-primary leading-none">{stats?.totalItems ?? 0}</div>
-                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">Active<br/>Cases</div>
-              </div>
-              <div className="flex items-center gap-3 bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100 flex-1 lg:flex-none">
-                <div className="text-2xl font-black text-secondary leading-none">{stats?.claimedItems ?? 0}</div>
-                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">Items<br/>Reunited</div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
     </div>
   );
 }
