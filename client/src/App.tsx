@@ -17,12 +17,9 @@ function Router() {
   const [location, setLocation] = useLocation();
 
   useEffect(() => {
-    // Disable browser automatic scroll restoration
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-    // Scroll to top when route changes or component mounts
-    window.scrollTo(0, 0);
+    try {
+      window.scrollTo(0, 0);
+    } catch (e) {}
   }, [location]);
 
   useEffect(() => {
