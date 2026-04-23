@@ -151,12 +151,12 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
                 ) : (
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                 )}
-                Reunite with Student
+                Claim Item
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md rounded-2xl bg-white border-slate-200 shadow-2xl">
               <DialogHeader>
-                <DialogTitle className="font-black text-xl text-slate-800">Confirm Reunion</DialogTitle>
+                <DialogTitle className="font-black text-xl text-slate-800">Confirm Claim</DialogTitle>
                 <DialogDescription className="font-medium text-slate-500 text-sm">
                   Please enter the name of the student or staff member claiming this item.
                 </DialogDescription>
