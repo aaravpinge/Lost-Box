@@ -32,7 +32,8 @@ export class DatabaseStorage implements IStorage {
       filters.push(
         or(
           ilike(items.description, searchPattern),
-          ilike(items.location, searchPattern)
+          ilike(items.location, searchPattern),
+          ilike(items.category, searchPattern)
         )
       );
     }
