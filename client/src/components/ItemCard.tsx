@@ -93,9 +93,15 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
           </span>
         </div>
 
-        <h3 className="font-black text-xl mb-4 text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-[1.2]">
+        <h3 className="font-black text-xl mb-1 text-slate-900 group-hover:text-primary transition-colors line-clamp-1 leading-[1.2]">
           {item.description}
         </h3>
+
+        {item.additionalDetails && (
+          <p className="text-xs font-medium text-slate-500 mb-4 line-clamp-2 leading-relaxed">
+            {item.additionalDetails}
+          </p>
+        )}
 
         <div className="space-y-4">
           <div className="flex items-start gap-3">
