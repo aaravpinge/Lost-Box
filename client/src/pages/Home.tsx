@@ -63,14 +63,18 @@ export default function Home() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               transition={{ delay: 0.3 }}
-              className="flex gap-8 sm:border-l sm:border-slate-200 sm:pl-8 shrink-0"
+              className="flex gap-6 sm:gap-10 sm:border-l sm:border-slate-200 sm:pl-8 shrink-0"
             >
               <div className="text-center sm:text-left">
-                 <div className="text-2xl font-black text-primary leading-none">{stats?.totalItems ?? 0}</div>
-                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Active Cases</div>
+                 <div className="text-2xl font-black text-rose-500 leading-none">{stats?.lostItems ?? 0}</div>
+                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Active Lost</div>
               </div>
               <div className="text-center sm:text-left">
-                 <div className="text-2xl font-black text-secondary leading-none">{stats?.claimedItems ?? 0}</div>
+                 <div className="text-2xl font-black text-primary leading-none">{stats?.foundItems ?? 0}</div>
+                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Active Found</div>
+              </div>
+              <div className="text-center sm:text-left">
+                 <div className="text-2xl font-black text-emerald-500 leading-none">{stats?.claimedItems ?? 0}</div>
                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight mt-1">Reunited</div>
               </div>
             </motion.div>

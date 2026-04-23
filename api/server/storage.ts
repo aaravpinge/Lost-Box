@@ -15,7 +15,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User>;
   findPotentialMatches(item: Item): Promise<Item[]>;
-  getStats(): Promise<{ totalItems: number; claimedItems: number }>;
+  getStats(): Promise<{ totalItems: number; lostItems: number; foundItems: number; claimedItems: number }>;
   getExpiredItems(days?: number): Promise<Item[]>;
 }
 
@@ -120,11 +120,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(items.dateReported));
   }
 
-  async getStats(): Promise<{ totalItems: number; claimedItems: number }> {
+  async getStats(): Promise<{ totalItems: number; lostItems: number; foundItems: number; claimedItems: number }> {
     const allItems = await db.select().from(items);
-    const total = allItems.filter((i: any) => i.status === 'reported').length;
+    const active = allItems.filter((i: any) => i.status === 'reported');
+    const total = active.length;
+    const lost = active.filter((i: any) => i.type === 'lost').length;
+    const found = active.filter((i: any) => i.type === 'found').length;
     const claimed = allItems.filter((i: any) => i.status === 'claimed' || i.status === 'retrieved').length;
-    return { totalItems: total, claimedItems: claimed };
+    return { totalItems: total, lostItems: lost, foundItems: found, claimedItems: claimed };
   }
 
   async getExpiredItems(days: number = 30): Promise<Item[]> {
