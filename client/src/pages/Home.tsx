@@ -17,10 +17,13 @@ import { cn } from "@/lib/utils";
 export default function Home() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const isSearching = search.trim().length > 0;
   const { data: stats } = useStats();
+  const { data: searchResults, isLoading: loadingSearch } = useItems(undefined, search);
   const { data: foundItems, isLoading: loadingFound } = useItems("found", search);
   const { data: lostItems, isLoading: loadingLost } = useItems("lost", search);
 
+  const matchedItems = searchResults?.filter(item => (selectedCategory === "All" || item.category === selectedCategory)) || [];
   const claimedItems = foundItems?.filter(item => (item.status === 'claimed' || item.status === 'retrieved') && (selectedCategory === "All" || item.category === selectedCategory)) || [];
   const availableFoundItems = foundItems?.filter(item => item.type === 'found' && item.status !== 'claimed' && item.status !== 'retrieved' && (selectedCategory === "All" || item.category === selectedCategory)) || [];
   const activeLostItems = lostItems?.filter(item => item.type === 'lost' && item.status !== 'claimed' && item.status !== 'retrieved' && (selectedCategory === "All" || item.category === selectedCategory)) || [];
@@ -102,79 +105,94 @@ export default function Home() {
           </motion.div>
         </div>
 
-        <Tabs defaultValue="found" className="w-full">
-          {/* Row 2: View Tabs */}
-          <div className="mb-6">
-            <div className="bg-slate-200/50 p-1.5 rounded-2xl inline-flex border border-slate-200 w-full md:w-auto overflow-x-auto scrollbar-none shadow-sm shrink-0">
-              <TabsList className="bg-transparent h-auto p-0 gap-2 min-w-max">
-                <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-found">Found</TabsTrigger>
-                <TabsTrigger value="lost" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-rose-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-lost">Lost</TabsTrigger>
-                <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-emerald-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-claimed">Claimed</TabsTrigger>
-              </TabsList>
-            </div>
-          </div>
+        {isSearching ? (
+          <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="flex items-center justify-between mb-8">
+               <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Search Results</h2>
+               <Button variant="ghost" size="sm" onClick={() => setSearch("")} className="text-slate-400 font-bold uppercase tracking-widest text-[10px] hover:text-primary">Clear Search</Button>
+             </div>
 
-          {/* Row 3: Filter Categories */}
-          <div className="flex overflow-x-auto gap-2 pb-8 scrollbar-none w-full min-w-0 pr-4">
-            <Button
-              variant={selectedCategory === "All" ? "default" : "outline"}
-              onClick={() => setSelectedCategory("All")}
-              className={cn(
-                "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm transition-all h-10 px-5",
-                selectedCategory === "All" ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
-              )}
-            >
-              All Items
-            </Button>
-            {CATEGORIES.map((category) => (
+             {loadingSearch ? (
+              <ItemGridSkeleton />
+            ) : matchedItems.length === 0 ? (
+              <EmptyState title="No matches found" message={`We couldn't find anything matching "${search}".`} icon={<Search className="w-12 h-12" />} />
+            ) : (
+              <ItemGrid items={matchedItems} />
+            )}
+          </div>
+        ) : (
+          <Tabs defaultValue="found" className="w-full">
+            {/* Row 2: View Tabs */}
+            <div className="mb-6">
+              <div className="bg-slate-200/50 p-1.5 rounded-2xl inline-flex border border-slate-200 w-full md:w-auto overflow-x-auto scrollbar-none shadow-sm shrink-0">
+                <TabsList className="bg-transparent h-auto p-0 gap-2 min-w-max">
+                  <TabsTrigger value="found" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-found">Found</TabsTrigger>
+                  <TabsTrigger value="lost" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-rose-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-lost">Lost</TabsTrigger>
+                  <TabsTrigger value="claimed" className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:text-emerald-500 data-[state=active]:shadow-md transition-all font-black text-[10px] uppercase tracking-[0.2em]" data-testid="tab-claimed">Claimed</TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
+
+            {/* Row 3: Filter Categories */}
+            <div className="flex overflow-x-auto gap-2 pb-8 scrollbar-none w-full min-w-0 pr-4">
               <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category)}
+                variant={selectedCategory === "All" ? "default" : "outline"}
+                onClick={() => setSelectedCategory("All")}
                 className={cn(
-                  "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm gap-2 transition-all h-10 px-5",
-                  selectedCategory === category ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
+                  "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm transition-all h-10 px-5",
+                  selectedCategory === "All" ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
                 )}
               >
-                {getCategoryIcon(category)}
-                {category}
+                All Items
               </Button>
-            ))}
-          </div>
+              {CATEGORIES.map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(category)}
+                  className={cn(
+                    "rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 shadow-sm gap-2 transition-all h-10 px-5",
+                    selectedCategory === category ? "shadow-primary/20" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
+                  )}
+                >
+                  {getCategoryIcon(category)}
+                  {category}
+                </Button>
+              ))}
+            </div>
 
-          <TabsContent value="found" className="mt-0 outline-none">
-            {loadingFound ? (
-              <ItemGridSkeleton />
-            ) : availableFoundItems.length === 0 ? (
-              <EmptyState title="The box is clear" message="No items are currently in the found database. Check back soon." icon={<PackageOpen className="w-12 h-12" />} type="found" />
-            ) : (
-              <ItemGrid items={availableFoundItems} />
-            )}
-          </TabsContent>
+            <TabsContent value="found" className="mt-0 outline-none">
+              {loadingFound ? (
+                <ItemGridSkeleton />
+              ) : availableFoundItems.length === 0 ? (
+                <EmptyState title="The box is clear" message="No items are currently in the found database. Check back soon." icon={<PackageOpen className="w-12 h-12" />} type="found" />
+              ) : (
+                <ItemGrid items={availableFoundItems} />
+              )}
+            </TabsContent>
 
-          <TabsContent value="lost" className="mt-0 outline-none">
-            {loadingLost ? (
-              <ItemGridSkeleton />
-            ) : activeLostItems.length === 0 ? (
-              <EmptyState title="No active cases" message="All lost items have either been found or no reports have been submitted." icon={<HelpCircle className="w-12 h-12" />} type="lost" />
-            ) : (
-              <ItemGrid items={activeLostItems} />
-            )}
-          </TabsContent>
+            <TabsContent value="lost" className="mt-0 outline-none">
+              {loadingLost ? (
+                <ItemGridSkeleton />
+              ) : activeLostItems.length === 0 ? (
+                <EmptyState title="No active cases" message="All lost items have either been found or no reports have been submitted." icon={<HelpCircle className="w-12 h-12" />} type="lost" />
+              ) : (
+                <ItemGrid items={activeLostItems} />
+              )}
+            </TabsContent>
 
-          <TabsContent value="claimed" className="mt-0 outline-none">
-            {loadingFound ? (
-              <ItemGridSkeleton />
-            ) : claimedItems.length === 0 ? (
-              <EmptyState title="History is empty" message="Matches will appear here once students claim their items." icon={<CheckCircle2 className="w-12 h-12" />} />
-            ) : (
-              <ItemGrid items={claimedItems} />
-            )}
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="claimed" className="mt-0 outline-none">
+              {loadingFound ? (
+                <ItemGridSkeleton />
+              ) : claimedItems.length === 0 ? (
+                <EmptyState title="History is empty" message="Matches will appear here once students claim their items." icon={<CheckCircle2 className="w-12 h-12" />} />
+              ) : (
+                <ItemGrid items={claimedItems} />
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </section>
-
-
     </div>
   );
 }
