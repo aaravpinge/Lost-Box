@@ -163,7 +163,7 @@ export function ReportForm({ type }: ReportFormProps) {
   return (
     <div className="pt-2 pb-12 px-4 md:pt-4 bg-slate-50/50 min-h-screen">
       <Card className="max-w-2xl mx-auto bg-white border-slate-300 shadow-2xl rounded-2xl overflow-hidden mb-12">
-        <div className="bg-primary py-12 md:py-16 px-8 text-center relative overflow-hidden">
+        <div className="bg-primary py-8 md:py-10 px-8 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent pointer-events-none"></div>
           <CardTitle className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-2 uppercase relative z-10 drop-shadow-md">
             Submit {type === "lost" ? "Lost" : "Found"} Item
@@ -184,7 +184,7 @@ export function ReportForm({ type }: ReportFormProps) {
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <div className="flex justify-between items-end mb-2">
-                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">What did you {type}?</FormLabel>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">What did you {type === "lost" ? "lose" : "find"}?</FormLabel>
                       {watchDesc && watchDesc.length >= 3 && (
                         <motion.span 
                           initial={{ opacity: 0 }} 
