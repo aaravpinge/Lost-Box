@@ -32,7 +32,9 @@ export function ReportForm({ type }: ReportFormProps) {
   const [, setLocation] = useLocation();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
+const [verificationQuestions, setVerificationQuestions] = useState([
+  { q: "", a: "" },
+]);
   const oppositeType = type === "lost" ? "found" : "lost";
   const { data: oppositeItems = [] } = useItems(oppositeType);
 
@@ -63,7 +65,25 @@ export function ReportForm({ type }: ReportFormProps) {
   });
 
   const onSubmit = (data: InsertItem) => {
-    mutate(data, {
+  const cleanedQuestions =
+    type === "found"
+      ? verificationQuestions
+          .map(({ q, a }) => ({
+            q: q.trim(),
+            a: a.trim(),
+          }))
+          .filter((question) => question.q && question.a)
+      : [];
+
+  const submissionData = {
+    ...data,
+    privateFields:
+      cleanedQuestions.length > 0
+        ? { verificationQuestions: cleanedQuestions }
+        : undefined,
+  };
+
+  mutate(submissionData, {
       onSuccess: () => {
         setShowSuccess(true);
         setTimeout(() => {
@@ -388,7 +408,65 @@ export function ReportForm({ type }: ReportFormProps) {
                 </FormItem>
               )}
             />
+{type === "found" && (
+  <div className="md:col-span-2 rounded-2xl border border-primary/20 bg-primary/5 p-6">
+    <div className="mb-4">
+      <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">
+        Owner Verification Questions
+      </h3>
+      <p className="mt-1 text-xs text-slate-500">
+        Create questions and answers that only the real owner would reasonably know.
+        Answers are kept private.
+      </p>
+    </div>
 
+    <div className="space-y-4">
+      {verificationQuestions.map((question, index) => (
+        <div
+          key={index}
+          className="rounded-xl border border-slate-200 bg-white p-4"
+        >
+          <div className="grid gap-3 md:grid-cols-2">
+            <Input
+              placeholder={`Question ${index + 1}, e.g. What color is it?`}
+              value={question.q}
+              onChange={(e) => {
+                const updated = [...verificationQuestions];
+                updated[index].q = e.target.value;
+                setVerificationQuestions(updated);
+              }}
+            />
+
+            <Input
+              placeholder="Private answer"
+              value={question.a}
+              onChange={(e) => {
+                const updated = [...verificationQuestions];
+                updated[index].a = e.target.value;
+                setVerificationQuestions(updated);
+              }}
+            />
+          </div>
+        </div>
+      ))}
+
+      {verificationQuestions.length < 3 && (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() =>
+            setVerificationQuestions([
+              ...verificationQuestions,
+              { q: "", a: "" },
+            ])
+          }
+        >
+          + Add Question
+        </Button>
+      )}
+    </div>
+  </div>
+)}
             {potentialMatches.length > 0 && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
