@@ -41,7 +41,49 @@ export async function registerRoutes(
 
     res.json(item);
   });
+// Get verification questions for a found item
+app.get("/api/items/:id/verification-questions", async (req, res) => {
+  try {
+    const item = await storage.getItem(Number(req.params.id));
 
+    if (!item) {
+      return res.status(404).json({
+        message: "Item not found",
+      });
+    }
+
+    if (item.type !== "found") {
+      return res.status(400).json({
+        message: "Verification questions are only available for found items",
+      });
+    }
+
+    const questions = Array.isArray(item.verificationQuestions)
+      ? item.verificationQuestions
+      : [];
+
+    return res.json(
+      questions
+        .filter(
+          (question: any) =>
+            question &&
+            typeof question.q === "string" &&
+            question.q.trim().length > 0
+        )
+        .map((question: any) => ({
+          q: question.q.trim(),
+        }))
+    );
+  } catch (err: any) {
+    log(
+      `GET /api/items/:id/verification-questions error: ${err.message}`
+    );
+
+    return res.status(500).json({
+      message: "Could not load verification questions",
+    });
+  }
+});
   // Submit a claim for a found item
   app.post(api.items.claim.path, async (req, res) => {
     try {
