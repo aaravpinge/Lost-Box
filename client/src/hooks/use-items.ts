@@ -13,8 +13,7 @@ export function useItems(type?: "lost" | "found", search?: string) {
 
       if (type) params.append("type", type);
       if (search) params.append("search", search);
-
-      const res = await fetch(`${url}?${params.toString()}`, {
+const res = await fetch(`${url}?${params.toString()}`, {
         credentials: "omit",
         headers: {
           "bypass-tunnel-reminder": "true",
