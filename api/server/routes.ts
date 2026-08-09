@@ -23,47 +23,97 @@ export async function registerRoutes(
 
   app.get(api.items.get.path, async (req, res) => {
     const item = await storage.getItem(Number(req.params.id));
+
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }
-    res.json(item);
+    // Do not expose privateFields to non-admin users
+    const out = { ...item } as any;
+
+    if (!req.isAuthenticated() || !(req.user as any)?.isAdmin) {
+      delete out.privateFields;
+    }
+
+    return res.json(out);
+  });
+
+  // Return only verification question texts for an item.
+  // Never expose aHash or other private fields.
+  app.get("/api/items/:id/verification-questions", async (req, res) => {
+    try {
+      const item = await storage.getItem(Number(req.params.id));
+
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      const privateFields = item.privateFields || {};
+
+      const storedQs = Array.isArray(privateFields.verificationQuestions)
+        ? privateFields.verificationQuestions
+        : [];
+
+      const questions = storedQs.map((q: any) => ({
+        q: String(q.q),
+      }));
+
+      return res.json(questions);
+    } catch (err: any) {
+      log(`GET /api/items/:id/verification-questions - Error: ${err}`);
+
+      return res.status(500).json({
+        message: "Internal Server Error",
+      });
+    }
   });
 
   app.post(api.items.create.path, async (req, res) => {
     try {
       log(`POST /api/items - Received data: ${JSON.stringify(req.body)}`);
+
       const input = api.items.create.input.parse(req.body);
+
       log(`POST /api/items - Validation successful`);
-      
+
       const item = await storage.createItem(input);
       log(`POST /api/items - Database insert successful: ID ${item.id}`);
 
       // Trigger Intelligent Auto-Matching
       try {
         const matches = await storage.findPotentialMatches(item);
+
         if (matches.length > 0) {
-          sendMatchNotification(item, matches).catch(err => log(`Match Notification Error: ${err}`));
+          sendMatchNotification(item, matches).catch(err =>
+            log(`Match Notification Error: ${err}`)
+          );
         }
       } catch (matchErr) {
         log(`Matching logic error (continuing): ${matchErr}`);
       }
 
       // Fire and forget email notification
-      sendItemNotification(item).catch(err => log(`Notification Error: ${err}`));
+      sendItemNotification(item).catch(err =>
+        log(`Notification Error: ${err}`)
+      );
 
       res.status(201).json(item);
     } catch (err: any) {
       log(`POST /api/items - CRITICAL ERROR: ${err.message}`);
+
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
           field: err.errors[0].path.join("."),
         });
       }
-      res.status(500).json({ 
-        message: "Internal Server Error", 
+
+      res.status(500).json({
+        message: "Internal Server Error",
         details: err.message,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        stack:
+          process.env.NODE_ENV === "development"
+            ? err.stack
+            : undefined,
       });
     }
   });
@@ -76,29 +126,39 @@ export async function registerRoutes(
   app.patch(api.items.updateStatus.path, async (req, res) => {
     try {
       const { status, claimedBy } = req.body;
-      const item = await storage.updateItemStatus(Number(req.params.id), status, claimedBy);
+
+      const item = await storage.updateItemStatus(
+        Number(req.params.id),
+        status,
+        claimedBy
+      );
+
       if (!item) {
         return res.status(404).json({ message: "Item not found" });
       }
+
       res.json(item);
     } catch (err) {
       res.status(400).json({ message: "Invalid status" });
     }
   });
-
   app.delete(api.items.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Unauthorized" });
     }
+
     await storage.deleteItem(Number(req.params.id));
+
     res.status(204).send();
   });
 
   // Seed data
   try {
     const existing = await storage.getItems();
+
     if (existing.length === 0) {
       log("Seeding initial sample data...");
+
       await storage.createItem({
         type: "found",
         description: "Blue water bottle",
@@ -107,8 +167,9 @@ export async function registerRoutes(
         contactEmail: "smith@bwscampus.com",
         dateFound: new Date().toISOString(),
         dateLost: null,
-        category: "Water Bottles"
+        category: "Water Bottles",
       });
+
       await storage.createItem({
         type: "lost",
         description: "Math textbook",
@@ -117,7 +178,7 @@ export async function registerRoutes(
         contactEmail: "jane@bwscampus.com",
         dateLost: new Date().toISOString(),
         dateFound: null,
-        category: "Books"
+        category: "Books",
       });
     }
   } catch (err) {
@@ -128,8 +189,12 @@ export async function registerRoutes(
   try {
     const adminEmail = "admin@bwscampus.com";
     const adminUser = await storage.getUserByEmail(adminEmail);
+
     const crypto = await import("crypto");
-    const hashedPassword = crypto.scryptSync("admin123", "salt", 64).toString("hex");
+
+    const hashedPassword = crypto
+      .scryptSync("admin123", "salt", 64)
+      .toString("hex");
 
     if (!adminUser) {
       await storage.createUser({
@@ -139,12 +204,14 @@ export async function registerRoutes(
         lastName: "User",
         isAdmin: "true",
       });
+
       log("Admin user created: admin@bwscampus.com / admin123");
     } else if (!adminUser.password || adminUser.isAdmin !== "true") {
       await storage.updateUser(adminUser.id, {
         password: hashedPassword,
-        isAdmin: "true"
+        isAdmin: "true",
       });
+
       log("Admin user updated: admin@bwscampus.com / admin123");
     }
   } catch (err) {
@@ -156,6 +223,7 @@ export async function registerRoutes(
     setInterval(async () => {
       try {
         const expiredItems = await storage.getExpiredItems(30);
+
         if (expiredItems.length > 0) {
           sendExpiryAlert(expiredItems);
         }
@@ -166,32 +234,38 @@ export async function registerRoutes(
   }
 
   // Initial check on startup
-  storage.getExpiredItems(30).then(items => {
-    if (items.length > 0) sendExpiryAlert(items);
-  }).catch(err => console.error("Initial Expiry Check Error:", err));
+  storage
+    .getExpiredItems(30)
+    .then(items => {
+      if (items.length > 0) {
+        sendExpiryAlert(items);
+      }
+    })
+    .catch(err => console.error("Initial Expiry Check Error:", err));
 
   // Health Check Endpoint
   app.get("/api/health", async (req, res) => {
     try {
       const { items } = await import("../../shared/schema.js");
       const { db } = await import("./db.js");
-      
+
       // Try a simple query
       const result = await db.select().from(items).limit(1);
-      
+
       res.json({
         status: "connected",
         database: "Vercel Postgres / Neon",
         itemCount: result.length,
-        migrationStatus: "Success (Items table found)"
+        migrationStatus: "Success (Items table found)",
       });
     } catch (err: any) {
       log(`Health Check Failed: ${err.message}`);
+
       res.status(500).json({
         status: "error",
         message: err.message,
         stack: err.stack,
-        hint: "Check your POSTGRES_URL and ensure the migrations have run."
+        hint: "Check your POSTGRES_URL and ensure the migrations have run.",
       });
     }
   });
