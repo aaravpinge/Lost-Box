@@ -27,7 +27,21 @@ export const items = pgTable("items", {
 });
 
 export const CATEGORIES = ["Electronics", "Clothing", "Water Bottles", "Keys", "Books", "Other"] as const;
-
+export const LOCATIONS = [
+  "Classroom",
+  "Cafeteria",
+  "Gym",
+  "Library",
+  "Hallway",
+  "Field",
+  "Bus",
+  "SLC",
+  "Pool Patio",
+  "North Quad",
+  "South Quad",
+  "PAV",
+  "Other"
+] as const;
 export const insertItemSchema = createInsertSchema(items).omit({
   id: true,
   dateReported: true,
