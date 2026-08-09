@@ -41,6 +41,60 @@ export async function registerRoutes(
 
     res.json(item);
   });
+  // Return public verification questions for a found item.
+// Never return the stored answers or answer hashes.
+app.get("/api/items/:id/verification-questions", async (req, res) => {
+  try {
+    const itemId = Number(req.params.id);
+
+    if (!Number.isInteger(itemId)) {
+      return res.status(400).json({
+        message: "Invalid item ID",
+      });
+    }
+
+    const item = await storage.getItem(itemId);
+
+    if (!item) {
+      return res.status(404).json({
+        message: "Item not found",
+      });
+    }
+
+    if (item.type !== "found") {
+      return res.status(400).json({
+        message: "Verification questions are only available for found items",
+      });
+    }
+
+    const privateFields = (item as any).privateFields;
+
+    const verificationQuestions =
+      privateFields &&
+      Array.isArray(privateFields.verificationQuestions)
+        ? privateFields.verificationQuestions
+            .filter(
+              (question: any) =>
+                question &&
+                typeof question.q === "string" &&
+                question.q.trim().length > 0
+            )
+            .map((question: any) => ({
+              q: question.q.trim(),
+            }))
+        : [];
+
+    return res.json(verificationQuestions);
+  } catch (err: any) {
+    log(
+      `GET /api/items/:id/verification-questions error: ${err.message}`
+    );
+
+    return res.status(500).json({
+      message: "Could not load verification questions",
+    });
+  }
+});
 // Get verification questions for a found item
 app.get("/api/items/:id/verification-questions", async (req, res) => {
   try {
