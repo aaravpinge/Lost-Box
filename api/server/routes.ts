@@ -1,200 +1,87 @@
-import type { Express } from "express";
-import { type Server } from "http";
-import { storage } from "./storage.js";
-import { api } from "../../shared/routes.js";
-import { z } from "zod";
-import { setupAuth } from "./auth.js";
-import { registerUploadRoutes } from "./uploads.js";
-import { sendItemNotification, sendMatchNotification, sendExpiryAlert } from "./email.js";
-import { log } from "./index.js";
-
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express
-): Promise<Server> {
-  setupAuth(app);
-  registerUploadRoutes(app);
-
-  app.get(api.items.list.path, async (req, res) => {
-    const { type, search } = req.query;
-    let items = await storage.getItems(type as string, search as string);
-    res.json(items);
-  });
-
-  app.get(api.items.get.path, async (req, res) => {
-    const item = await storage.getItem(Number(req.params.id));
-    if (!item) {
-      return res.status(404).json({ message: "Item not found" });
-    }
-    res.json(item);
-  });
-
-  app.post(api.items.create.path, async (req, res) => {
-    try {
-      log(`POST /api/items - Received data: ${JSON.stringify(req.body)}`);
-      const input = api.items.create.input.parse(req.body);
-      log(`POST /api/items - Validation successful`);
-      
-      const item = await storage.createItem(input);
-      log(`POST /api/items - Database insert successful: ID ${item.id}`);
-
-      // Trigger Intelligent Auto-Matching
-      try {
-        const matches = await storage.findPotentialMatches(item);
-        if (matches.length > 0) {
-          sendMatchNotification(item, matches).catch(err => log(`Match Notification Error: ${err}`));
-        }
-      } catch (matchErr) {
-        log(`Matching logic error (continuing): ${matchErr}`);
-      }
-
-      // Fire and forget email notification
-      sendItemNotification(item).catch(err => log(`Notification Error: ${err}`));
-
-      res.status(201).json(item);
-    } catch (err: any) {
-      log(`POST /api/items - CRITICAL ERROR: ${err.message}`);
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join("."),
-        });
-      }
-      res.status(500).json({ 
-        message: "Internal Server Error", 
-        details: err.message,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-      });
-    }
-  });
-
-  app.get("/api/stats", async (req, res) => {
-    const stats = await storage.getStats();
-    res.json(stats);
-  });
-
-  app.patch(api.items.updateStatus.path, async (req, res) => {
-    try {
-      const { status, claimedBy } = req.body;
-      const item = await storage.updateItemStatus(Number(req.params.id), status, claimedBy);
-      if (!item) {
-        return res.status(404).json({ message: "Item not found" });
-      }
-      res.json(item);
-    } catch (err) {
-      res.status(400).json({ message: "Invalid status" });
-    }
-  });
-
-  app.delete(api.items.delete.path, async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    await storage.deleteItem(Number(req.params.id));
-    res.status(204).send();
-  });
-
-  // Seed data
-  try {
-    const existing = await storage.getItems();
-    if (existing.length === 0) {
-      log("Seeding initial sample data...");
-      await storage.createItem({
-        type: "found",
-        description: "Blue water bottle",
-        location: "Gym",
-        contactName: "Coach Smith",
-        contactEmail: "smith@bwscampus.com",
-        dateFound: new Date().toISOString(),
-        dateLost: null,
-        category: "Water Bottles"
-      });
-      await storage.createItem({
-        type: "lost",
-        description: "Math textbook",
-        location: "Library",
-        contactName: "Jane Doe",
-        contactEmail: "jane@bwscampus.com",
-        dateLost: new Date().toISOString(),
-        dateFound: null,
-        category: "Books"
-      });
-    }
-  } catch (err) {
-    log(`Warning: Initial data seeding skipped: ${err}`);
-  }
-
-  // Seed admin user
-  try {
-    const adminEmail = "admin@bwscampus.com";
-    const adminUser = await storage.getUserByEmail(adminEmail);
-    const crypto = await import("crypto");
-    const hashedPassword = crypto.scryptSync("admin123", "salt", 64).toString("hex");
-
-    if (!adminUser) {
-      await storage.createUser({
-        email: adminEmail,
-        password: hashedPassword,
-        firstName: "Admin",
-        lastName: "User",
-        isAdmin: "true",
-      });
-      log("Admin user created: admin@bwscampus.com / admin123");
-    } else if (!adminUser.password || adminUser.isAdmin !== "true") {
-      await storage.updateUser(adminUser.id, {
-        password: hashedPassword,
-        isAdmin: "true"
-      });
-      log("Admin user updated: admin@bwscampus.com / admin123");
-    }
-  } catch (err) {
-    log(`Warning: Admin user initialization skipped: ${err}`);
-  }
-
-  // Setup Smart Expiry & Donation Alerts (Daily check)
-  if (!process.env.VERCEL) {
-    setInterval(async () => {
-      try {
-        const expiredItems = await storage.getExpiredItems(30);
-        if (expiredItems.length > 0) {
-          sendExpiryAlert(expiredItems);
-        }
-      } catch (err) {
-        console.error("Expiry Alert Error:", err);
-      }
-    }, 1000 * 60 * 60 * 24); // Every 24 hours
-  }
-
-  // Initial check on startup
-  storage.getExpiredItems(30).then(items => {
-    if (items.length > 0) sendExpiryAlert(items);
-  }).catch(err => console.error("Initial Expiry Check Error:", err));
-
-  // Health Check Endpoint
-  app.get("/api/health", async (req, res) => {
-    try {
-      const { items } = await import("../../shared/schema.js");
-      const { db } = await import("./db.js");
-      
-      // Try a simple query
-      const result = await db.select().from(items).limit(1);
-      
-      res.json({
-        status: "connected",
-        database: "Vercel Postgres / Neon",
-        itemCount: result.length,
-        migrationStatus: "Success (Items table found)"
-      });
-    } catch (err: any) {
-      log(`Health Check Failed: ${err.message}`);
-      res.status(500).json({
-        status: "error",
-        message: err.message,
-        stack: err.stack,
-        hint: "Check your POSTGRES_URL and ensure the migrations have run."
-      });
-    }
-  });
-
-  return httpServer;
-}
+*** Begin Patch
+*** Update File: api/server/routes.ts
+@@
+   app.post(api.items.create.path, async (req, res) => {
+     try {
+-      log(`POST /api/items - Received data: ${JSON.stringify(req.body)}`);
+-      const input = api.items.create.input.parse(req.body);
++      // Redact any privateFields from logs
++      const safeBody = { ...req.body };
++      if (safeBody.privateFields) safeBody.privateFields = '[REDACTED]';
++      log(`POST /api/items - Received data: ${JSON.stringify(safeBody)}`);
++      const input = api.items.create.input.parse(req.body);
+       log(`POST /api/items - Validation successful`);
+       
+       const item = await storage.createItem(input);
+       log(`POST /api/items - Database insert successful: ID ${item.id}`);
+@@
+-      res.status(201).json(item);
++      // Ensure private fields are not returned in public response
++      const safeItem = { ...item } as any;
++      delete safeItem.privateFields;
++      res.status(201).json(safeItem);
+     } catch (err: any) {
+@@
+   app.get("/api/stats", async (req, res) => {
+     const stats = await storage.getStats();
+     res.json(stats);
+   });
++
++  // Claim endpoint: submit a claim for a found item
++  app.post('/api/items/:id/claim', async (req, res) => {
++    try {
++      const item = await storage.getItem(Number(req.params.id));
++      if (!item) return res.status(404).json({ message: 'Item not found' });
++
++      const { claimantName, claimantEmail, answers } = req.body;
++      // answers: [{ q, a }]
++
++      // Compute match score if verification questions exist
++      let matchScore = 0;
++      try {
++        const privateFields = item.privateFields || {};
++        const storedQs = privateFields.verificationQuestions || [];
++        if (Array.isArray(storedQs) && Array.isArray(answers)) {
++          for (const sq of storedQs) {
++            const match = answers.find((a: any) => String(a.q).trim() === String(sq.q).trim());
++            if (match && match.a) {
++              const { hashAnswer } = await import('./crypto.js');
++              const aHash = hashAnswer(match.a);
++              if (aHash === sq.aHash) matchScore += 1;
++            }
++          }
++        }
++      } catch (e) {
++        // continue with matchScore=0
++      }
++
++      const claim = await storage.createClaim(Number(req.params.id), claimantName, claimantEmail, { answers }, matchScore);
++      // Notify reporter and admins
++      try { sendMatchNotification(claim); } catch (e) { log(`Claim notify error: ${e}`); }
++
++      res.status(201).json({ claimId: claim.id, matchScore, message: 'Claim submitted and pending review' });
++    } catch (err: any) {
++      log(`POST /api/items/:id/claim - Error: ${err}`);
++      res.status(500).json({ message: 'Internal Server Error' });
++    }
++  });
++
++  // Staff-only: review a claim
++  app.post('/api/claims/:id/review', async (req, res) => {
++    if (!req.isAuthenticated() || !(req.user as any)?.isAdmin) {
++      return res.status(401).json({ message: 'Unauthorized' });
++    }
++    try {
++      const claimId = Number(req.params.id);
++      const { action, notes, setStatus } = req.body; // action: 'accept'|'reject', setStatus: optional 'verified'|'resolved'
++      if (!['accept','reject'].includes(action)) return res.status(400).json({ message: 'Invalid action' });
++      const reviewer = (req.user as any)?.email || (req.user as any)?.id || 'admin';
++      const claim = await storage.reviewClaim(claimId, reviewer, action, notes, setStatus);
++      if (!claim) return res.status(404).json({ message: 'Claim not found' });
++      res.json({ message: 'Claim reviewed', claim });
++    } catch (err: any) {
++      log(`POST /api/claims/:id/review - Error: ${err}`);
++      res.status(500).json({ message: 'Internal Server Error' });
++    }
++  });
+*** End Patch

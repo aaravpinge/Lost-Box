@@ -1,6 +1,7 @@
 import { db } from "./db.js";
-import { items, users, type Item, type InsertItem, type User, type UpsertUser as InsertUser } from "../../shared/schema.js";
+import { items, claims, users, type Item, type InsertItem, type User, type UpsertUser as InsertUser } from "../../shared/schema.js";
 import { eq, desc, or, and, ilike, lt } from "drizzle-orm";
+import { preparePrivateFields } from "./crypto.js";
 
 export interface IStorage {
   getItems(type?: string, search?: string): Promise<Item[]>;
@@ -17,6 +18,12 @@ export interface IStorage {
   findPotentialMatches(item: Item): Promise<Item[]>;
   getStats(): Promise<{ totalItems: number; lostItems: number; foundItems: number; claimedItems: number }>;
   getExpiredItems(days?: number): Promise<Item[]>;
+
+  // Claims
+  createClaim(itemId: number, claimantName: string | undefined, claimantEmail: string | undefined, claimedDetails: any, matchScore?: number): Promise<any>;
+  getClaimsForItem(itemId: number): Promise<any[]>;
+  getClaimById(claimId: number): Promise<any | undefined>;
+  reviewClaim(claimId: number, reviewer: string, action: 'accept' | 'reject', notes?: string, setStatus?: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -38,24 +45,52 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
+    let rows;
     if (filters.length > 0) {
       // @ts-ignore - Drizzle where with multiple filters
-      return await query.where(and(...filters)).orderBy(desc(items.dateReported));
+      rows = await query.where(and(...filters)).orderBy(desc(items.dateReported));
+    } else {
+      rows = await query.orderBy(desc(items.dateReported));
     }
 
-    return await query.orderBy(desc(items.dateReported));
+    // Redact private fields before returning to public callers
+    return rows.map((r: any) => {
+      const out = { ...r };
+      if (out.publicFields) {
+        try { out.publicFields = JSON.parse(out.publicFields); } catch (e) { out.publicFields = out.publicFields; }
+      } else {
+        out.publicFields = null;
+      }
+      // remove privateFields entirely from public responses
+      delete out.privateFields;
+      return out;
+    });
   }
 
   async getItem(id: number): Promise<Item | undefined> {
     const [item] = await db.select().from(items).where(eq(items.id, id));
-    return item;
+    if (!item) return undefined;
+    const out: any = { ...item };
+    if (out.publicFields) {
+      try { out.publicFields = JSON.parse(out.publicFields); } catch (e) { out.publicFields = out.publicFields; }
+    } else {
+      out.publicFields = null;
+    }
+    // Parse privateFields so claim endpoint can use it, but keep it present here; routes should redact before sending to public
+    if (out.privateFields) {
+      try { out.privateFields = JSON.parse(out.privateFields); } catch (e) { out.privateFields = out.privateFields; }
+    }
+    return out;
   }
 
   async createItem(insertItem: InsertItem): Promise<Item> {
-    const formattedItem = {
+    const preparedPrivate = preparePrivateFields((insertItem as any).privateFields);
+    const formattedItem: any = {
       ...insertItem,
       dateLost: insertItem.dateLost ? new Date(insertItem.dateLost) : null,
       dateFound: insertItem.dateFound ? new Date(insertItem.dateFound) : null,
+      publicFields: insertItem.publicFields ? JSON.stringify(insertItem.publicFields) : null,
+      privateFields: preparedPrivate ? JSON.stringify(preparedPrivate) : null,
     };
     const [item] = await db.insert(items).values(formattedItem as any).returning();
     return item;
@@ -123,11 +158,11 @@ export class DatabaseStorage implements IStorage {
 
   async getStats(): Promise<{ totalItems: number; lostItems: number; foundItems: number; claimedItems: number }> {
     const allItems = await db.select().from(items);
-    const active = allItems.filter((i: any) => i.status === 'reported');
+    const active = allItems.filter((i: any) => i.status === 'reported' || i.status === 'pending_verification');
     const total = active.length;
     const lost = active.filter((i: any) => i.type === 'lost').length;
     const found = active.filter((i: any) => i.type === 'found').length;
-    const claimed = allItems.filter((i: any) => i.status === 'claimed' || i.status === 'retrieved').length;
+    const claimed = allItems.filter((i: any) => i.status === 'claimed' || i.status === 'retrieved' || i.status === 'verified' || i.status === 'resolved').length;
     return { totalItems: total, lostItems: lost, foundItems: found, claimedItems: claimed };
   }
 
@@ -141,10 +176,42 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(items.type, "found"),
-          eq(items.status, "reported"),
+          eq(items.status, "pending_verification"),
           lt(items.dateReported, cutoffDate)
         )
       );
+  }
+
+  // Claims methods
+  async createClaim(itemId: number, claimantName: string | undefined, claimantEmail: string | undefined, claimedDetails: any, matchScore: number = 0): Promise<any> {
+    const [claim] = await db.insert(claims).values({
+      item_id: itemId,
+      claimant_name: claimantName || null,
+      claimant_email: claimantEmail || null,
+      claimed_details: JSON.stringify(claimedDetails),
+      match_score: matchScore,
+      status: matchScore > 0 ? 'needs_review' : 'pending'
+    }).returning();
+    return claim;
+  }
+
+  async getClaimsForItem(itemId: number): Promise<any[]> {
+    return await db.select().from(claims).where(eq(claims.item_id, itemId)).orderBy(desc(claims.created_at));
+  }
+
+  async getClaimById(claimId: number): Promise<any | undefined> {
+    const [c] = await db.select().from(claims).where(eq(claims.id, claimId));
+    return c;
+  }
+
+  async reviewClaim(claimId: number, reviewer: string, action: 'accept' | 'reject', notes?: string, setStatus?: string): Promise<any> {
+    const status = action === 'accept' ? 'accepted' : 'rejected';
+    const [claim] = await db.update(claims).set({ status, reviewed_at: new Date(), reviewer, notes: notes || null }).where(eq(claims.id, claimId)).returning();
+    if (!claim) return undefined;
+    if (action === 'accept' && claim.item_id && setStatus) {
+      await this.updateItemStatus(claim.item_id, setStatus);
+    }
+    return claim;
   }
 }
 
