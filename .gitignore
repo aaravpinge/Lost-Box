@@ -23,3 +23,5 @@ dist/
 api/index.js
 api/server/index.js
 
+.vercel
+.env*
