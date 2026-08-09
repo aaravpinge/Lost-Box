@@ -1,4 +1,3 @@
-```ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +12,11 @@ export function useItems(type?: "lost" | "found", search?: string) {
 
       if (type) params.append("type", type);
       if (search) params.append("search", search);
-const res = await fetch(`${url}?${params.toString()}`, {
+
+      const queryString = params.toString();
+      const requestUrl = queryString ? `${url}?${queryString}` : url;
+
+      const res = await fetch(requestUrl, {
         credentials: "omit",
         headers: {
           "bypass-tunnel-reminder": "true",
@@ -108,87 +111,6 @@ export function useCreateItem() {
   });
 }
 
-/**
- * Create a claim for an item.
- */
-export function useCreateClaim() {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: async ({
-      id,
-      claimantName,
-      claimantEmail,
-      answers,
-    }: {
-      id: number;
-      claimantName?: string;
-      claimantEmail?: string;
-      answers: Array<{
-        q: string;
-        a: string;
-      }>;
-    }) => {
-      const res = await fetch(`/api/items/${id}/claims`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "bypass-tunnel-reminder": "true",
-        },
-        credentials: "omit",
-        body: JSON.stringify({
-          claimantName,
-          claimantEmail,
-          answers,
-        }),
-      });
-
-      if (!res.ok) {
-        let message = "Failed to submit claim";
-
-        try {
-          const data = await res.json();
-
-          if (data?.message) {
-            message = data.message;
-          }
-        } catch {
-          // Keep default error message.
-        }
-
-        throw new Error(message);
-      }
-
-      return await res.json();
-    },
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [api.items.list.path],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["/api/stats"],
-      });
-
-      toast({
-        title: "Claim Submitted",
-        description:
-          "Your claim has been submitted for verification.",
-      });
-    },
-
-    onError: (error) => {
-      toast({
-        title: "Claim Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-}
-
 export function useUpdateItemStatus() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -252,6 +174,82 @@ export function useUpdateItemStatus() {
   });
 }
 
+/**
+ * Creates a claim for a found item.
+ */
+export function useCreateClaim() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      claimantName,
+      claimantEmail,
+      answers,
+    }: {
+      id: number;
+      claimantName?: string;
+      claimantEmail?: string;
+      answers: Array<{ q: string; a: string }>;
+    }) => {
+      const res = await fetch(`/api/items/${id}/claim`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "bypass-tunnel-reminder": "true",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          claimantName,
+          claimantEmail,
+          answers,
+        }),
+      });
+
+      if (!res.ok) {
+        let message = "Failed to submit claim";
+
+        try {
+          const error = await res.json();
+          if (error?.message) {
+            message = error.message;
+          }
+        } catch {
+          // Keep default error message.
+        }
+
+        throw new Error(message);
+      }
+
+      return res.json();
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [api.items.list.path],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["/api/stats"],
+      });
+
+      toast({
+        title: "Claim Submitted",
+        description: "Your claim has been submitted successfully.",
+      });
+    },
+
+    onError: (error) => {
+      toast({
+        title: "Claim Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
 export function useDeleteItem() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -281,59 +279,6 @@ export function useDeleteItem() {
       toast({
         title: "Item Deleted",
         description: "The report has been removed.",
-      });
-    },
-  });
-}
-export function useCreateClaim() {
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: async ({
-      id,
-      claimantName,
-      claimantEmail,
-      answers,
-    }: {
-      id: number;
-      claimantName?: string;
-      claimantEmail?: string;
-      answers: Array<{ q: string; a: string }>;
-    }) => {
-      const res = await fetch(`/api/items/${id}/claim`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "bypass-tunnel-reminder": "true",
-        },
-        credentials: "omit",
-        body: JSON.stringify({
-          claimantName,
-          claimantEmail,
-          answers,
-        }),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        throw new Error(error.message || "Failed to submit claim");
-      }
-
-      return res.json();
-    },
-
-    onSuccess: () => {
-      toast({
-        title: "Claim Submitted",
-        description: "Your claim has been submitted for verification.",
-      });
-    },
-
-    onError: (error) => {
-      toast({
-        title: "Claim Failed",
-        description: error.message,
-        variant: "destructive",
       });
     },
   });
