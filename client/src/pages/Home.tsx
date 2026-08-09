@@ -47,22 +47,22 @@ export default function Home() {
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-gradient-to-br from-slate-900 via-primary/95 to-slate-900 rounded-[2.5rem] p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden border border-white/10"
+          className="bg-gradient-to-br from-slate-900 via-primary/95 to-slate-900 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-12 text-white shadow-2xl relative overflow-hidden border border-white/10"
         >
           <div className="absolute -right-16 -top-16 w-80 h-80 bg-primary/30 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -left-16 -bottom-16 w-80 h-80 bg-rose-500/20 rounded-full blur-3xl pointer-events-none"></div>
           
           <div className="max-w-3xl relative z-10">
-            <Badge className="bg-white/10 text-white hover:bg-white/20 border-white/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6 backdrop-blur-md">
+            <Badge className="bg-white/10 text-white hover:bg-white/20 border-white/20 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest mb-4 sm:mb-6 backdrop-blur-md">
               🔍 Smart Campus Lost & Found
             </Badge>
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight sm:leading-none mb-4 text-white drop-shadow-md">
+            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight sm:leading-none mb-3 sm:mb-4 text-white drop-shadow-md">
               Lost something? <br className="hidden sm:inline" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-white to-cyan-200">
                 Find it before it's gone for good.
               </span>
             </h1>
-            <p className="text-slate-300 text-base sm:text-lg font-medium leading-relaxed max-w-2xl">
+            <p className="text-slate-300 text-xs sm:text-lg font-medium leading-relaxed max-w-2xl">
               Lost Box helps students quickly find and report lost-and-found items at their school. Search active items, submit reports, and get reunited with missing belongings.
             </p>
           </div>
@@ -70,10 +70,10 @@ export default function Home() {
       </section>
 
       {/* Live Feed Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 md:pt-8 md:pb-12 relative z-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8 md:pt-8 md:pb-12 relative z-20">
         
         {/* Row 1: Header Area (Title + Stats + Search) */}
-        <div className="flex flex-col xl:flex-row justify-between items-center gap-6 mb-10 bg-white/40 py-4 px-8 rounded-3xl border border-slate-200 shadow-sm backdrop-blur-sm">
+        <div className="flex flex-col xl:flex-row justify-between items-center gap-6 mb-10 bg-white/40 py-4 px-4 sm:px-8 rounded-3xl border border-slate-200 shadow-sm backdrop-blur-sm">
           <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
