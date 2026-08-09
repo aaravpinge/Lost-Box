@@ -1,4 +1,5 @@
 import { db } from "./db.js";
+
 import {
   items,
   users,
@@ -7,39 +8,82 @@ import {
   type User,
   type UpsertUser as InsertUser,
 } from "../../shared/schema.js";
-import { eq, desc, or, and, ilike, lt } from "drizzle-orm";
+
+import {
+  eq,
+  desc,
+  or,
+  and,
+  ilike,
+  lt,
+} from "drizzle-orm";
 
 export interface IStorage {
-  getItems(type?: string, search?: string): Promise<Item[]>;
-  getItem(id: number): Promise<Item | undefined>;
-  createItem(item: InsertItem): Promise<Item>;
+  getItems(
+    type?: string,
+    search?: string
+  ): Promise<Item[]>;
+
+  getItem(
+    id: number
+  ): Promise<Item | undefined>;
+
+  createItem(
+    item: InsertItem & {
+      privateFields?: any;
+    }
+  ): Promise<Item>;
+
   updateItemStatus(
     id: number,
     status: string,
     claimedBy?: string
   ): Promise<Item | undefined>;
-  deleteItem(id: number): Promise<void>;
 
-  // Auth methods
-  getUser(id: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
+  deleteItem(
+    id: number
+  ): Promise<void>;
 
-  findPotentialMatches(item: Item): Promise<Item[]>;
+  getUser(
+    id: string
+  ): Promise<User | undefined>;
+
+  getUserByEmail(
+    email: string
+  ): Promise<User | undefined>;
+
+  createUser(
+    user: InsertUser
+  ): Promise<User>;
+
+  updateUser(
+    id: string,
+    user: Partial<User>
+  ): Promise<User | undefined>;
+
+  findPotentialMatches(
+    item: Item
+  ): Promise<Item[]>;
+
   getStats(): Promise<{
     totalItems: number;
     lostItems: number;
     foundItems: number;
     claimedItems: number;
   }>;
-  getExpiredItems(days?: number): Promise<Item[]>;
+
+  getExpiredItems(
+    days?: number
+  ): Promise<Item[]>;
 }
 
-export class DatabaseStorage implements IStorage {
-  async getItems(type?: string, search?: string): Promise<Item[]> {
-    let query = db.select().from(items);
-
+export class DatabaseStorage
+  implements IStorage
+{
+  async getItems(
+    type?: string,
+    search?: string
+  ): Promise<Item[]> {
     const filters = [];
 
     if (type) {
@@ -47,28 +91,45 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (search) {
-      const searchPattern = `%${search.toLowerCase()}%`;
+      const searchPattern =
+        `%${search.toLowerCase()}%`;
 
       filters.push(
         or(
-          ilike(items.description, searchPattern),
-          ilike(items.location, searchPattern),
-          ilike(items.category, searchPattern)
+          ilike(
+            items.description,
+            searchPattern
+          ),
+          ilike(
+            items.location,
+            searchPattern
+          ),
+          ilike(
+            items.category,
+            searchPattern
+          )
         )
       );
     }
 
+    const query = db
+      .select()
+      .from(items);
+
     if (filters.length > 0) {
-      // @ts-ignore - Drizzle where with multiple filters
       return await query
         .where(and(...filters))
         .orderBy(desc(items.dateReported));
     }
 
-    return await query.orderBy(desc(items.dateReported));
+    return await query.orderBy(
+      desc(items.dateReported)
+    );
   }
 
-  async getItem(id: number): Promise<Item | undefined> {
+  async getItem(
+    id: number
+  ): Promise<Item | undefined> {
     const [item] = await db
       .select()
       .from(items)
@@ -77,12 +138,13 @@ export class DatabaseStorage implements IStorage {
     return item;
   }
 
-  async createItem(insertItem: InsertItem): Promise<Item> {
+  async createItem(
+    insertItem: InsertItem & {
+      privateFields?: any;
+    }
+  ): Promise<Item> {
     const formattedItem = {
       ...insertItem,
-
-      // Every newly reported item starts as "reported"
-      status: "reported",
 
       dateLost: insertItem.dateLost
         ? new Date(insertItem.dateLost)
@@ -118,11 +180,17 @@ export class DatabaseStorage implements IStorage {
     return item;
   }
 
-  async deleteItem(id: number): Promise<void> {
-    await db.delete(items).where(eq(items.id, id));
+  async deleteItem(
+    id: number
+  ): Promise<void> {
+    await db
+      .delete(items)
+      .where(eq(items.id, id));
   }
 
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(
+    id: string
+  ): Promise<User | undefined> {
     const [user] = await db
       .select()
       .from(users)
@@ -131,7 +199,9 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
+  async getUserByEmail(
+    email: string
+  ): Promise<User | undefined> {
     const [user] = await db
       .select()
       .from(users)
@@ -140,7 +210,9 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(
+    insertUser: InsertUser
+  ): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(insertUser)
@@ -165,21 +237,31 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async findPotentialMatches(item: Item): Promise<Item[]> {
+  async findPotentialMatches(
+    item: Item
+  ): Promise<Item[]> {
     const oppositeType =
-      item.type === "lost" ? "found" : "lost";
+      item.type === "lost"
+        ? "found"
+        : "lost";
 
     const keywords = item.description
       .toLowerCase()
       .split(/\W+/)
-      .filter((word) => word.length > 3);
+      .filter(
+        (word) => word.length > 3
+      );
 
     if (keywords.length === 0) {
       return [];
     }
 
-    const conditions = keywords.map((word) =>
-      ilike(items.description, `%${word}%`)
+    const conditions = keywords.map(
+      (word) =>
+        ilike(
+          items.description,
+          `%${word}%`
+        )
     );
 
     return await db
@@ -191,7 +273,9 @@ export class DatabaseStorage implements IStorage {
           or(...conditions)
         )
       )
-      .orderBy(desc(items.dateReported));
+      .orderBy(
+        desc(items.dateReported)
+      );
   }
 
   async getStats(): Promise<{
@@ -200,33 +284,32 @@ export class DatabaseStorage implements IStorage {
     foundItems: number;
     claimedItems: number;
   }> {
-    const allItems = await db.select().from(items);
+    const allItems =
+      await db.select().from(items);
 
     const active = allItems.filter(
-      (i: any) => i.status === "reported"
+      (item: any) =>
+        item.status === "reported"
     );
 
-    const total = active.length;
-
-    const lost = active.filter(
-      (i: any) => i.type === "lost"
-    ).length;
-
-    const found = active.filter(
-      (i: any) => i.type === "found"
-    ).length;
-
-    const claimed = allItems.filter(
-      (i: any) =>
-        i.status === "claimed" ||
-        i.status === "retrieved"
-    ).length;
-
     return {
-      totalItems: total,
-      lostItems: lost,
-      foundItems: found,
-      claimedItems: claimed,
+      totalItems: active.length,
+
+      lostItems: active.filter(
+        (item: any) =>
+          item.type === "lost"
+      ).length,
+
+      foundItems: active.filter(
+        (item: any) =>
+          item.type === "found"
+      ).length,
+
+      claimedItems: allItems.filter(
+        (item: any) =>
+          item.status === "claimed" ||
+          item.status === "retrieved"
+      ).length,
     };
   }
 
@@ -246,10 +329,14 @@ export class DatabaseStorage implements IStorage {
         and(
           eq(items.type, "found"),
           eq(items.status, "reported"),
-          lt(items.dateReported, cutoffDate)
+          lt(
+            items.dateReported,
+            cutoffDate
+          )
         )
       );
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage =
+  new DatabaseStorage();
