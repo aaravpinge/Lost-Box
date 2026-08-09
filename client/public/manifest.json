@@ -1,7 +1,7 @@
 {
-  "name": "Lost Box | Brentwood School",
+  "name": "Lost Box | Campus Lost & Found",
   "short_name": "Lost Box",
-  "description": "Smart Lost and Found for Brentwood School Campus",
+  "description": "Smart Campus Lost and Found System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#002b52",

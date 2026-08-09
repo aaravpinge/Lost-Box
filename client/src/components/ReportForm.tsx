@@ -327,9 +327,9 @@ export function ReportForm({ type }: ReportFormProps) {
                 name="contactEmail"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Official Campus Email (@bwscampus.com)</FormLabel>
+                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Official Campus Email (@stu.birminghamcharter.com or @bcchs.net)</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="student@bwscampus.com" {...field} className="h-12 rounded-xl border-slate-400 bg-slate-50/80 text-sm placeholder:text-slate-500" />
+                      <Input type="email" placeholder="student@stu.birminghamcharter.com or user@bcchs.net" {...field} className="h-12 rounded-xl border-slate-400 bg-slate-50/80 text-sm placeholder:text-slate-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

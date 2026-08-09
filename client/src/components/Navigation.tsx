@@ -26,7 +26,7 @@ export function Navigation() {
                 <span className="font-black text-2xl sm:text-4xl tracking-tighter text-slate-900 leading-none group-hover:text-primary transition-colors drop-shadow-sm whitespace-nowrap">
                   Lost Box
                 </span>
-                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 mt-1 whitespace-nowrap">{"Brentwood School Lost & Found"}</span>
+                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 mt-1 whitespace-nowrap">{"Campus Lost & Found"}</span>
               </div>
             </Link>
           </div>
@@ -54,7 +54,7 @@ export function Navigation() {
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <a 
-              href="mailto:apinge2027@bwscampus.com?subject=Lost Box App Feedback&body=Device/Browser:%0D%0A%0D%0ABug Description/Error:%0D%0A%0D%0AFeature Request:%0D%0A"
+              href="mailto:feedback@bcchs.net?subject=Lost Box App Feedback&body=Device/Browser:%0D%0A%0D%0ABug Description/Error:%0D%0A%0D%0AFeature Request:%0D%0A"
               className="hidden lg:block"
             >
               <Button

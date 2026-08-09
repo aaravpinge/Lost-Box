@@ -36,8 +36,11 @@ export const insertItemSchema = createInsertSchema(items).omit({
   contactEmail: z.string()
     .email("Invalid email address")
     .min(1, "Email is required")
-    .refine((email) => email.toLowerCase().endsWith("@bwscampus.com"), {
-      message: "You must use your official @bwscampus.com email address to report an item"
+    .refine((email) => {
+      const lower = email.toLowerCase();
+      return lower.endsWith("@stu.birminghamcharter.com") || lower.endsWith("@bcchs.net");
+    }, {
+      message: "You must use an official campus email (@stu.birminghamcharter.com or @bcchs.net) to report an item"
     }),
   dateLost: z.string().optional().nullable(),
   dateFound: z.string().optional().nullable(),
