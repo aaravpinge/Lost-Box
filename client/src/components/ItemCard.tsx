@@ -232,7 +232,8 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
             {item.category || "Other"}
           </Badge>
 
-          {isFound && item.status === "reported" && (
+          {isFound &&
+  (item.status === "reported" || item.status === "pending_verification") && (
             <div className="rounded-full border border-rose-200 bg-white/80 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-rose-600 shadow-sm backdrop-blur-md">
               {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
             </div>
