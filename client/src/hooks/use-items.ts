@@ -286,4 +286,56 @@ export function useDeleteItem() {
     },
   });
 }
-```
+export function useCreateClaim() {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      claimantName,
+      claimantEmail,
+      answers,
+    }: {
+      id: number;
+      claimantName?: string;
+      claimantEmail?: string;
+      answers: Array<{ q: string; a: string }>;
+    }) => {
+      const res = await fetch(`/api/items/${id}/claim`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "bypass-tunnel-reminder": "true",
+        },
+        credentials: "omit",
+        body: JSON.stringify({
+          claimantName,
+          claimantEmail,
+          answers,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message || "Failed to submit claim");
+      }
+
+      return res.json();
+    },
+
+    onSuccess: () => {
+      toast({
+        title: "Claim Submitted",
+        description: "Your claim has been submitted for verification.",
+      });
+    },
+
+    onError: (error) => {
+      toast({
+        title: "Claim Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
