@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "next-themes";
-import schoolLogo from "@assets/school_logo_1767939229083.png";
+import placeholderLogo from "@assets/placeholder_logo.svg";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -20,7 +20,7 @@ export function Navigation() {
           <div className="flex items-center shrink-0">
             <Link href="/" className="flex items-center gap-3 sm:gap-5 group cursor-pointer">
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-slate-100 shadow-lg group-hover:scale-105 transition-transform duration-500 shrink-0">
-                <img src={schoolLogo} alt="School Logo" className="w-full h-full object-cover" />
+                <img src={placeholderLogo} alt="Placeholder Logo" className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col justify-center">
                 <span className="font-black text-2xl sm:text-4xl tracking-tighter text-slate-900 leading-none group-hover:text-primary transition-colors drop-shadow-sm whitespace-nowrap">
