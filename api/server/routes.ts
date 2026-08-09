@@ -1,3 +1,4 @@
+```ts
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage.js";
@@ -349,7 +350,8 @@ export async function registerRoutes(
   // Health Check Endpoint
   app.get("/api/health", async (req, res) => {
     try {
-      const { items } = await import("../../shared/schema.js");
+      const { items } =
+        await import("../../shared/schema.js");
       const { db } = await import("./db.js");
 
       const result = await db
@@ -381,5 +383,7 @@ export async function registerRoutes(
 
   return httpServer;
 }
-  
-  
+```
+
+
+      
