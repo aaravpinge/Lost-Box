@@ -1,6 +1,12 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import app from '../dist/index.cjs';
+import serverModule from '../dist/index.cjs';
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+const app = serverModule.default;
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (serverModule.initPromise) {
+    await serverModule.initPromise;
+  }
+
   return app(req, res);
 }
