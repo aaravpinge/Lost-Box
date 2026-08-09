@@ -308,7 +308,9 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
         </div>
 
         {/* CLAIM BUTTON */}
-        {isFound && item.status === "reported" && (
+{isFound &&
+  (item.status === "reported" ||
+    item.status === "pending_verification") && (
           <Dialog
             open={isDialogOpen}
             onOpenChange={(open) => {
