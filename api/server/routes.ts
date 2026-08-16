@@ -298,6 +298,132 @@ export async function registerRoutes(
     }
   });
 
+  // ============================================================
+  // ADMIN CLAIM REVIEW
+  // ============================================================
+
+  // Get claims for a specific item.
+  // Only authenticated admins may access claim information.
+  app.get("/api/items/:id/claims", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({
+          message: "Unauthorized",
+        });
+      }
+
+      const user = req.user as any;
+
+      if (user?.isAdmin !== "true") {
+        return res.status(403).json({
+          message: "Admin access required",
+        });
+      }
+
+      const itemId = Number(req.params.id);
+
+      if (!Number.isInteger(itemId)) {
+        return res.status(400).json({
+          message: "Invalid item ID",
+        });
+      }
+
+      const item = await storage.getItem(itemId);
+
+      if (!item) {
+        return res.status(404).json({
+          message: "Item not found",
+        });
+      }
+
+      const claims = await storage.getClaimsForItem(itemId);
+
+      return res.json(claims);
+    } catch (err: any) {
+      log(
+        `GET /api/items/:id/claims error: ${
+          err?.message || err
+        }`
+      );
+
+      return res.status(500).json({
+        message: "Could not load claims",
+      });
+    }
+  });
+
+  // Review a pending claim.
+  // Approve -> item becomes claimed.
+  // Reject -> item becomes available for another claim.
+  app.post("/api/claims/:id/review", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({
+          message: "Unauthorized",
+        });
+      }
+
+      const user = req.user as any;
+
+      if (user?.isAdmin !== "true") {
+        return res.status(403).json({
+          message: "Admin access required",
+        });
+      }
+
+      const claimId = Number(req.params.id);
+      const { action, notes } = req.body ?? {};
+
+      if (!Number.isInteger(claimId)) {
+        return res.status(400).json({
+          message: "Invalid claim ID",
+        });
+      }
+
+      if (action !== "accept" && action !== "reject") {
+        return res.status(400).json({
+          message: "Action must be accept or reject",
+        });
+      }
+
+      const claim = await storage.getClaimById(claimId);
+
+      if (!claim) {
+        return res.status(404).json({
+          message: "Claim not found",
+        });
+      }
+
+      if (claim.status !== "pending") {
+        return res.status(400).json({
+          message: "This claim has already been reviewed",
+        });
+      }
+
+      const result = await storage.reviewClaim(
+        claimId,
+        user.email || user.id || "admin",
+        action,
+        typeof notes === "string" ? notes : undefined,
+        action === "accept"
+          ? "claimed"
+          : "pending_verification"
+      );
+
+      return res.json(result);
+    } catch (err: any) {
+      log(
+        `POST /api/claims/:id/review error: ${
+          err?.message || err
+        }`
+      );
+
+      return res.status(500).json({
+        message: "Could not review claim",
+      });
+    }
+  });
+
   app.post(api.items.create.path, async (req, res) => {
     try {
       log(
@@ -508,4 +634,3 @@ export async function registerRoutes(
 
   return httpServer;
 }
-
