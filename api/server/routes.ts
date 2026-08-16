@@ -317,7 +317,8 @@ export async function registerRoutes(
         claimantName,
         claimantEmail,
         answers.length > 0 ? answers : null,
-        0
+        0,
+        "manual_verification"
       );
 
       // Keep the item in the pending state while staff manually
@@ -391,7 +392,10 @@ export async function registerRoutes(
         const claims = await storage.getClaimsForItem(item.id);
 
         for (const claim of claims) {
-          if (claim.status === "pending") {
+          if (
+            claim.status === "pending" ||
+            claim.status === "manual_verification"
+          ) {
             pendingClaims.push({
               ...claim,
 

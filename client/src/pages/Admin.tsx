@@ -659,6 +659,40 @@ export default function Admin() {
                             </p>
                           )}
 
+                          {claim.status === "manual_verification" && (
+                            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                              <p className="text-xs font-black uppercase tracking-widest text-amber-700">
+                                Manual Verification Required
+                              </p>
+
+                              <p className="text-sm font-medium text-amber-900 mt-1">
+                                This item has no owner verification questions.
+                                Review the claimant's identifying details before accepting.
+                              </p>
+
+                              {claim.claimed_details && (
+                                <div className="mt-3 rounded-lg bg-white/70 p-3">
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                                    Claimant's Verification Details
+                                  </p>
+
+                                  <p className="text-sm text-slate-700 whitespace-pre-wrap">
+                                    {(() => {
+                                      try {
+                                        const parsed = JSON.parse(claim.claimed_details);
+                                        return typeof parsed === "string"
+                                          ? parsed
+                                          : JSON.stringify(parsed, null, 2);
+                                      } catch {
+                                        return claim.claimed_details;
+                                      }
+                                    })()}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                         </div>
                       </div>
 
