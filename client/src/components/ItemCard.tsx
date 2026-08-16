@@ -1,4 +1,3 @@
-```tsx
 import { useState, useEffect } from "react";
 import { format, differenceInDays, addDays } from "date-fns";
 import { Item } from "@shared/schema";
@@ -510,4 +509,3 @@ export function ItemCard({ item, showAdminControls }: ItemCardProps) {
     </Card>
   );
 }
-```

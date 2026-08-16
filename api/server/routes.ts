@@ -1,4 +1,3 @@
-```ts
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage.js";
@@ -12,6 +11,7 @@ import {
   sendExpiryAlert,
 } from "./email.js";
 import { log } from "./index.js";
+import { verifyAnswer } from "./crypto.js";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -40,11 +40,13 @@ export async function registerRoutes(
       });
     }
 
-    res.json(item);
+    // redact privateFields before returning to public callers
+    const out = { ...item } as any;
+    delete out.privateFields;
+    res.json(out);
   });
-
-  // Return public verification questions for a found item.
-  // Never return stored answers or answer hashes.
+  // Consolidated: Return public verification questions for a found item.
+  // Never return the stored answers or answer hashes.
   app.get("/api/items/:id/verification-questions", async (req, res) => {
     try {
       const itemId = Number(req.params.id);
@@ -65,8 +67,7 @@ export async function registerRoutes(
 
       if (item.type !== "found") {
         return res.status(400).json({
-          message:
-            "Verification questions are only available for found items",
+          message: "Verification questions are only available for found items",
         });
       }
 
@@ -89,17 +90,14 @@ export async function registerRoutes(
 
       return res.json(verificationQuestions);
     } catch (err: any) {
-      log(
-        `GET /api/items/:id/verification-questions error: ${err.message}`
-      );
+      log(`GET /api/items/:id/verification-questions error: ${err?.message || err}`);
 
       return res.status(500).json({
         message: "Could not load verification questions",
       });
     }
   });
-
-  // Submit a claim for a found item.
+  // Submit a claim for a found item
   app.post(api.items.claim.path, async (req, res) => {
     try {
       const itemId = Number(req.params.id);
@@ -124,8 +122,6 @@ export async function registerRoutes(
         });
       }
 
-      // Allow the first claim when the item is pending_verification
-      // and there are no existing claims. Block later claims.
       if (
         item.status !== "reported" &&
         !(
@@ -143,14 +139,14 @@ export async function registerRoutes(
       const claimantName =
         typeof input?.claimantName === "string"
           ? input.claimantName.trim()
-          : "";
+          : undefined;
 
       const claimantEmail =
         typeof input?.claimantEmail === "string"
-          ? input.claimantEmail.trim().toLowerCase()
-          : "";
+          ? input.claimantEmail.trim()
+          : undefined;
 
-      // Claimant name is required.
+      // Require the claimant's name.
       if (!claimantName) {
         return res.status(400).json({
           message: "Please provide your name",
@@ -158,22 +154,10 @@ export async function registerRoutes(
         });
       }
 
-      // Claimant email is required.
+      // Require the claimant's email.
       if (!claimantEmail) {
         return res.status(400).json({
-          message: "Please provide your school email",
-          field: "claimantEmail",
-        });
-      }
-
-      // Only allow approved Birmingham Charter school email domains.
-      const allowedSchoolEmail =
-        /^[^\s@]+@(bcchs\.net|stu\.birmighamcharter\.com)$/i;
-
-      if (!allowedSchoolEmail.test(claimantEmail)) {
-        return res.status(400).json({
-          message:
-            "Please use your Birmingham Charter school email (@bcchs.net or @stu.birmighamcharter.com)",
+          message: "Please provide your email",
           field: "claimantEmail",
         });
       }
@@ -199,27 +183,52 @@ export async function registerRoutes(
         });
       }
 
-      const claim = await storage.createClaim(
-        itemId,
-        claimantName,
-        claimantEmail,
-        answers,
-        0
-      );
+      // If the item has stored verification questions, require verification-first
+      const storedVerification = (item as any).privateFields?.verificationQuestions ?? [];
 
-      return res.status(201).json({
-        claimId: claim.id,
-        matchScore: 0,
-        message:
-          "Claim submitted successfully. Staff will review your claim.",
-      });
+      if (Array.isArray(storedVerification) && storedVerification.length > 0) {
+        // Require answers for every stored question
+        for (const sq of storedVerification) {
+          const storedQ = typeof sq.q === "string" ? sq.q.trim() : "";
+          if (!storedQ) continue;
+          const provided = answers.find((a) => a.q.trim() === storedQ);
+          if (!provided) {
+            return res.status(400).json({ message: "Please answer all verification questions" });
+          }
+          if (!verifyAnswer(provided.a, sq.aHash)) {
+            // wrong answer: do not create a claim and do not change item status
+            return res.status(400).json({ message: "Verification failed" });
+          }
+        }
+
+        // All verification answers matched. Create a single claim with status 'pending'
+        // and do NOT store claimant-provided verification answers.
+        const claim = await storage.createClaim(itemId, claimantName, claimantEmail, null, 0);
+
+        // Set item status to pending_verification (do not mark as claimed)
+        await storage.updateItemStatus(itemId, "pending_verification");
+
+        return res.status(201).json({
+          claimId: claim.id,
+          matchScore: 0,
+          message: "Claim submitted successfully. Staff will review your claim.",
+        });
+      } else {
+        // No stored verification questions: preserve existing fallback behavior
+        const claim = await storage.createClaim(itemId, claimantName, claimantEmail, answers, 0);
+
+        return res.status(201).json({
+          claimId: claim.id,
+          matchScore: 0,
+          message: "Claim submitted successfully. Staff will review your claim.",
+        });
+      }
     } catch (err: any) {
       log(`POST /api/items/:id/claim error: ${err.message}`);
 
       if (err instanceof z.ZodError) {
         return res.status(400).json({
-          message:
-            err.errors[0]?.message || "Invalid claim data",
+          message: err.errors[0]?.message || "Invalid claim data",
           field: err.errors[0]?.path?.join("."),
         });
       }
@@ -246,7 +255,7 @@ export async function registerRoutes(
         `POST /api/items - Database insert successful: ID ${item.id}`
       );
 
-      // Trigger Intelligent Auto-Matching.
+      // Trigger Intelligent Auto-Matching
       try {
         const matches = await storage.findPotentialMatches(item);
 
@@ -259,7 +268,7 @@ export async function registerRoutes(
         log(`Matching logic error (continuing): ${matchErr}`);
       }
 
-      // Fire and forget email notification.
+      // Fire and forget email notification
       sendItemNotification(item).catch((err) =>
         log(`Notification Error: ${err}`)
       );
@@ -329,7 +338,7 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // Seed data.
+  // Seed data
   try {
     const existing = await storage.getItems();
 
@@ -341,7 +350,7 @@ export async function registerRoutes(
         description: "Blue water bottle",
         location: "Gym",
         contactName: "Coach Smith",
-        contactEmail: "smith@bwcampus.com",
+        contactEmail: "smith@bwscampus.com",
         dateFound: new Date().toISOString(),
         dateLost: null,
         category: "Water Bottles",
@@ -352,7 +361,7 @@ export async function registerRoutes(
         description: "Math textbook",
         location: "Library",
         contactName: "Jane Doe",
-        contactEmail: "jane@bwcampus.com",
+        contactEmail: "jane@bwscampus.com",
         dateLost: new Date().toISOString(),
         dateFound: null,
         category: "Books",
@@ -364,9 +373,9 @@ export async function registerRoutes(
     );
   }
 
-  // Seed admin user.
+  // Seed admin user
   try {
-    const adminEmail = "admin@bwcampus.com";
+    const adminEmail = "admin@bwscampus.com";
 
     const adminUser =
       await storage.getUserByEmail(adminEmail);
@@ -387,7 +396,7 @@ export async function registerRoutes(
       });
 
       log(
-        "Admin user created: admin@bwcampus.com / admin123"
+        "Admin user created: admin@bwscampus.com / admin123"
       );
     } else if (
       !adminUser.password ||
@@ -399,7 +408,7 @@ export async function registerRoutes(
       });
 
       log(
-        "Admin user updated: admin@bwcampus.com / admin123"
+        "Admin user updated: admin@bwscampus.com / admin123"
       );
     }
   } catch (err) {
@@ -408,7 +417,7 @@ export async function registerRoutes(
     );
   }
 
-  // Setup Smart Expiry & Donation Alerts (Daily check).
+  // Setup Smart Expiry & Donation Alerts (Daily check)
   if (!process.env.VERCEL) {
     setInterval(async () => {
       try {
@@ -424,7 +433,7 @@ export async function registerRoutes(
     }, 1000 * 60 * 60 * 24);
   }
 
-  // Initial check on startup.
+  // Initial check on startup
   storage
     .getExpiredItems(30)
     .then((items) => {
@@ -436,7 +445,7 @@ export async function registerRoutes(
       console.error("Initial Expiry Check Error:", err)
     );
 
-  // Health Check Endpoint.
+  // Health Check Endpoint
   app.get("/api/health", async (req, res) => {
     try {
       const { items } =
@@ -472,4 +481,3 @@ export async function registerRoutes(
 
   return httpServer;
 }
-```

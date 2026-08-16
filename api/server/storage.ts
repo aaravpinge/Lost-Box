@@ -184,14 +184,20 @@ export class DatabaseStorage implements IStorage {
 
   // Claims methods
   async createClaim(itemId: number, claimantName: string | undefined, claimantEmail: string | undefined, claimedDetails: any, matchScore: number = 0): Promise<any> {
+    const claimedDetailsJson =
+      claimedDetails == null
+        ? JSON.stringify({})
+        : JSON.stringify(claimedDetails);
+
     const [claim] = await db.insert(claims).values({
       item_id: itemId,
       claimant_name: claimantName || null,
       claimant_email: claimantEmail || null,
-      claimed_details: JSON.stringify(claimedDetails),
+      claimed_details: claimedDetailsJson,
       match_score: matchScore,
       status: matchScore > 0 ? 'needs_review' : 'pending'
     }).returning();
+
     return claim;
   }
 
