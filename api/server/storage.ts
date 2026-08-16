@@ -27,7 +27,6 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User>;
-
   findPotentialMatches(item: Item): Promise<Item[]>;
   getStats(): Promise<{
     totalItems: number;
@@ -38,6 +37,7 @@ export interface IStorage {
   getExpiredItems(days?: number): Promise<Item[]>;
 
   // Claims
+  getPendingClaims(): Promise<any[]>;
   createClaim(
     itemId: number,
     claimantName: string | undefined,
@@ -45,10 +45,8 @@ export interface IStorage {
     claimedDetails: any,
     matchScore?: number
   ): Promise<any>;
-
   getClaimsForItem(itemId: number): Promise<any[]>;
   getClaimById(claimId: number): Promise<any | undefined>;
-
   reviewClaim(
     claimId: number,
     reviewer: string,
@@ -91,20 +89,21 @@ export class DatabaseStorage implements IStorage {
       rows = await query.orderBy(desc(items.dateReported));
     }
 
-    // Public item responses must never expose private verification data.
+    // Redact private fields before returning to public callers
     return rows.map((r: any) => {
       const out = { ...r };
 
       if (out.publicFields) {
         try {
           out.publicFields = JSON.parse(out.publicFields);
-        } catch {
-          // Leave the value unchanged if it is already an object.
+        } catch (e) {
+          out.publicFields = out.publicFields;
         }
       } else {
         out.publicFields = null;
       }
 
+      // Never expose privateFields through public item listings.
       delete out.privateFields;
 
       return out;
@@ -126,20 +125,20 @@ export class DatabaseStorage implements IStorage {
     if (out.publicFields) {
       try {
         out.publicFields = JSON.parse(out.publicFields);
-      } catch {
-        // Leave unchanged if already parsed.
+      } catch (e) {
+        out.publicFields = out.publicFields;
       }
     } else {
       out.publicFields = null;
     }
 
-    // This method is also used internally by the claim route,
-    // so privateFields remain available here.
+    // Parse privateFields so the claim endpoint can use them.
+    // Routes must redact this before returning the item publicly.
     if (out.privateFields) {
       try {
         out.privateFields = JSON.parse(out.privateFields);
-      } catch {
-        // Leave unchanged if already parsed.
+      } catch (e) {
+        out.privateFields = out.privateFields;
       }
     }
 
@@ -308,9 +307,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getExpiredItems(
-    days: number = 30
-  ): Promise<Item[]> {
+  async getExpiredItems(days: number = 30): Promise<Item[]> {
     const cutoffDate = new Date();
 
     cutoffDate.setDate(
@@ -333,18 +330,15 @@ export class DatabaseStorage implements IStorage {
   // CLAIMS
   // ============================================================
 
-  /**
-   * Create a claim for a specific found item.
-   *
-   * IMPORTANT:
-   * claimant_name / claimant_email belong to the person
-   * attempting to claim the item.
-   *
-   * They are intentionally separate from:
-   * items.contactName / items.contactEmail
-   *
-   * The latter belong to the person who reported the item.
-   */
+  // Return only pending claims for the admin dashboard.
+  async getPendingClaims(): Promise<any[]> {
+    return await db
+      .select()
+      .from(claims)
+      .where(eq(claims.status, "pending"))
+      .orderBy(desc(claims.created_at));
+  }
+
   async createClaim(
     itemId: number,
     claimantName: string | undefined,
@@ -361,39 +355,20 @@ export class DatabaseStorage implements IStorage {
       .insert(claims)
       .values({
         item_id: itemId,
-
-        // This is the actual claimant.
-        claimant_name: claimantName
-          ? claimantName.trim()
-          : null,
-
-        claimant_email: claimantEmail
-          ? claimantEmail.trim().toLowerCase()
-          : null,
-
-        // Verification answers should NOT be stored here.
-        // The claim route has already verified them.
+        claimant_name: claimantName || null,
+        claimant_email: claimantEmail || null,
         claimed_details: claimedDetailsJson,
-
         match_score: matchScore,
-
-        // Every successful verification submission requires
-        // staff review before the item is actually claimed.
-        status: "pending",
-
-        created_at: new Date(),
+        status:
+          matchScore > 0
+            ? "needs_review"
+            : "pending",
       })
       .returning();
 
     return claim;
   }
 
-  /**
-   * Get every claim submitted for an item.
-   *
-   * This is what the Admin dashboard should use to determine
-   * who actually attempted to claim the item.
-   */
   async getClaimsForItem(
     itemId: number
   ): Promise<any[]> {
@@ -404,9 +379,6 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(claims.created_at));
   }
 
-  /**
-   * Get one claim by its claim ID.
-   */
   async getClaimById(
     claimId: number
   ): Promise<any | undefined> {
@@ -418,17 +390,6 @@ export class DatabaseStorage implements IStorage {
     return claim;
   }
 
-  /**
-   * Admin reviews a claim.
-   *
-   * Accept:
-   *   claim -> accepted
-   *   item  -> requested status
-   *
-   * Reject:
-   *   claim -> rejected
-   *   item remains unchanged
-   */
   async reviewClaim(
     claimId: number,
     reviewer: string,
@@ -436,21 +397,6 @@ export class DatabaseStorage implements IStorage {
     notes?: string,
     setStatus?: string
   ): Promise<any> {
-    const existingClaim =
-      await this.getClaimById(claimId);
-
-    if (!existingClaim) {
-      return undefined;
-    }
-
-    // Prevent reviewing an already-finalized claim.
-    if (
-      existingClaim.status === "accepted" ||
-      existingClaim.status === "rejected"
-    ) {
-      return existingClaim;
-    }
-
     const status =
       action === "accept"
         ? "accepted"
@@ -471,7 +417,6 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
 
-    // Only an accepted claim can change the item status.
     if (
       action === "accept" &&
       claim.item_id &&
@@ -479,8 +424,7 @@ export class DatabaseStorage implements IStorage {
     ) {
       await this.updateItemStatus(
         claim.item_id,
-        setStatus,
-        claim.claimant_name || undefined
+        setStatus
       );
     }
 
