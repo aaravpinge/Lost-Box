@@ -1,3 +1,4 @@
+```ts
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage.js";
@@ -64,7 +65,8 @@ export async function registerRoutes(
 
       if (item.type !== "found") {
         return res.status(400).json({
-          message: "Verification questions are only available for found items",
+          message:
+            "Verification questions are only available for found items",
         });
       }
 
@@ -110,7 +112,8 @@ export async function registerRoutes(
 
       if (item.type !== "found") {
         return res.status(400).json({
-          message: "Verification questions are only available for found items",
+          message:
+            "Verification questions are only available for found items",
         });
       }
 
@@ -191,6 +194,22 @@ export async function registerRoutes(
         typeof input?.claimantEmail === "string"
           ? input.claimantEmail.trim()
           : undefined;
+
+      // Claimant name is required.
+      if (!claimantName) {
+        return res.status(400).json({
+          message: "Please provide your name",
+          field: "claimantName",
+        });
+      }
+
+      // Claimant email is required.
+      if (!claimantEmail) {
+        return res.status(400).json({
+          message: "Please provide your email",
+          field: "claimantEmail",
+        });
+      }
 
       const answers = Array.isArray(input?.answers)
         ? input.answers
@@ -355,7 +374,7 @@ export async function registerRoutes(
         description: "Blue water bottle",
         location: "Gym",
         contactName: "Coach Smith",
-        contactEmail: "smith@bwscampus.com",
+        contactEmail: "smith@bwcampus.com",
         dateFound: new Date().toISOString(),
         dateLost: null,
         category: "Water Bottles",
@@ -366,7 +385,7 @@ export async function registerRoutes(
         description: "Math textbook",
         location: "Library",
         contactName: "Jane Doe",
-        contactEmail: "jane@bwscampus.com",
+        contactEmail: "jane@bwcampus.com",
         dateLost: new Date().toISOString(),
         dateFound: null,
         category: "Books",
@@ -380,7 +399,7 @@ export async function registerRoutes(
 
   // Seed admin user
   try {
-    const adminEmail = "admin@bwscampus.com";
+    const adminEmail = "admin@bwcampus.com";
 
     const adminUser =
       await storage.getUserByEmail(adminEmail);
@@ -401,7 +420,7 @@ export async function registerRoutes(
       });
 
       log(
-        "Admin user created: admin@bwscampus.com / admin123"
+        "Admin user created: admin@bwcampus.com / admin123"
       );
     } else if (
       !adminUser.password ||
@@ -413,7 +432,7 @@ export async function registerRoutes(
       });
 
       log(
-        "Admin user updated: admin@bwscampus.com / admin123"
+        "Admin user updated: admin@bwcampus.com / admin123"
       );
     }
   } catch (err) {
@@ -486,3 +505,4 @@ export async function registerRoutes(
 
   return httpServer;
 }
+```
