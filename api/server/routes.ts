@@ -41,103 +41,106 @@ export async function registerRoutes(
 
     res.json(item);
   });
+
   // Return public verification questions for a found item.
-// Never return the stored answers or answer hashes.
-app.get("/api/items/:id/verification-questions", async (req, res) => {
-  try {
-    const itemId = Number(req.params.id);
+  // Never return the stored answers or answer hashes.
+  app.get("/api/items/:id/verification-questions", async (req, res) => {
+    try {
+      const itemId = Number(req.params.id);
 
-    if (!Number.isInteger(itemId)) {
-      return res.status(400).json({
-        message: "Invalid item ID",
+      if (!Number.isInteger(itemId)) {
+        return res.status(400).json({
+          message: "Invalid item ID",
+        });
+      }
+
+      const item = await storage.getItem(itemId);
+
+      if (!item) {
+        return res.status(404).json({
+          message: "Item not found",
+        });
+      }
+
+      if (item.type !== "found") {
+        return res.status(400).json({
+          message: "Verification questions are only available for found items",
+        });
+      }
+
+      const privateFields = (item as any).privateFields;
+
+      const verificationQuestions =
+        privateFields &&
+        Array.isArray(privateFields.verificationQuestions)
+          ? privateFields.verificationQuestions
+              .filter(
+                (question: any) =>
+                  question &&
+                  typeof question.q === "string" &&
+                  question.q.trim().length > 0
+              )
+              .map((question: any) => ({
+                q: question.q.trim(),
+              }))
+          : [];
+
+      return res.json(verificationQuestions);
+    } catch (err: any) {
+      log(
+        `GET /api/items/:id/verification-questions error: ${err.message}`
+      );
+
+      return res.status(500).json({
+        message: "Could not load verification questions",
       });
     }
+  });
 
-    const item = await storage.getItem(itemId);
+  // Get verification questions for a found item
+  app.get("/api/items/:id/verification-questions", async (req, res) => {
+    try {
+      const item = await storage.getItem(Number(req.params.id));
 
-    if (!item) {
-      return res.status(404).json({
-        message: "Item not found",
-      });
-    }
+      if (!item) {
+        return res.status(404).json({
+          message: "Item not found",
+        });
+      }
 
-    if (item.type !== "found") {
-      return res.status(400).json({
-        message: "Verification questions are only available for found items",
-      });
-    }
+      if (item.type !== "found") {
+        return res.status(400).json({
+          message: "Verification questions are only available for found items",
+        });
+      }
 
-    const privateFields = (item as any).privateFields;
-
-    const verificationQuestions =
-      privateFields &&
-      Array.isArray(privateFields.verificationQuestions)
-        ? privateFields.verificationQuestions
-            .filter(
-              (question: any) =>
-                question &&
-                typeof question.q === "string" &&
-                question.q.trim().length > 0
-            )
-            .map((question: any) => ({
-              q: question.q.trim(),
-            }))
+      const questions = Array.isArray(item.verificationQuestions)
+        ? item.verificationQuestions
         : [];
 
-    return res.json(verificationQuestions);
-  } catch (err: any) {
-    log(
-      `GET /api/items/:id/verification-questions error: ${err.message}`
-    );
+      return res.json(
+        questions
+          .filter(
+            (question: any) =>
+              question &&
+              typeof question.q === "string" &&
+              question.q.trim().length > 0
+          )
+          .map((question: any) => ({
+            q: question.q.trim(),
+          }))
+      );
+    } catch (err: any) {
+      log(
+        `GET /api/items/:id/verification-questions error: ${err.message}`
+      );
 
-    return res.status(500).json({
-      message: "Could not load verification questions",
-    });
-  }
-});
-// Get verification questions for a found item
-app.get("/api/items/:id/verification-questions", async (req, res) => {
-  try {
-    const item = await storage.getItem(Number(req.params.id));
-
-    if (!item) {
-      return res.status(404).json({
-        message: "Item not found",
+      return res.status(500).json({
+        message: "Could not load verification questions",
       });
     }
+  });
 
-    if (item.type !== "found") {
-      return res.status(400).json({
-        message: "Verification questions are only available for found items",
-      });
-    }
-
-    const questions = Array.isArray(item.verificationQuestions)
-      ? item.verificationQuestions
-      : [];
-
-    return res.json(
-      questions
-        .filter(
-          (question: any) =>
-            question &&
-            typeof question.q === "string" &&
-            question.q.trim().length > 0
-        )
-        .map((question: any) => ({
-          q: question.q.trim(),
-        }))
-    );
-  } catch (err: any) {
-    log(
-      `GET /api/items/:id/verification-questions error: ${err.message}`
-    );
-
-    return res.status(500).json({
-      message: "Could not load verification questions",
-    });
-  }
-});
   // Submit a claim for a found item
   app.post(api.items.claim.path, async (req, res) => {
     try {
@@ -163,9 +166,14 @@ app.get("/api/items/:id/verification-questions", async (req, res) => {
         });
       }
 
+      // Allow the first claim when the item is pending_verification
+      // and there are no existing claims. Block later claims.
       if (
         item.status !== "reported" &&
-        item.status !== "pending_verification"
+        !(
+          item.status === "pending_verification" &&
+          (await storage.getClaimsForItem(itemId)).length === 0
+        )
       ) {
         return res.status(400).json({
           message: "This item is not currently available for claiming",
@@ -478,5 +486,3 @@ app.get("/api/items/:id/verification-questions", async (req, res) => {
 
   return httpServer;
 }
-
-
