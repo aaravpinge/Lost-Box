@@ -1,3 +1,4 @@
+
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage.js";
@@ -57,61 +58,64 @@ export async function registerRoutes(
 
   // Return public verification questions for a found item.
   // Never return stored answers or answer hashes.
-  app.get("/api/items/:id/verification-questions", async (req, res) => {
-    try {
-      const itemId = Number(req.params.id);
+  app.get(
+    "/api/items/:id/verification-questions",
+    async (req, res) => {
+      try {
+        const itemId = Number(req.params.id);
 
-      if (!Number.isInteger(itemId)) {
-        return res.status(400).json({
-          message: "Invalid item ID",
+        if (!Number.isInteger(itemId)) {
+          return res.status(400).json({
+            message: "Invalid item ID",
+          });
+        }
+
+        const item = await storage.getItem(itemId);
+
+        if (!item) {
+          return res.status(404).json({
+            message: "Item not found",
+          });
+        }
+
+        if (item.type !== "found") {
+          return res.status(400).json({
+            message:
+              "Verification questions are only available for found items",
+          });
+        }
+
+        const privateFields = (item as any).privateFields;
+
+        const verificationQuestions =
+          privateFields &&
+          Array.isArray(privateFields.verificationQuestions)
+            ? privateFields.verificationQuestions
+                .filter(
+                  (question: any) =>
+                    question &&
+                    typeof question.q === "string" &&
+                    question.q.trim().length > 0
+                )
+                .map((question: any) => ({
+                  q: question.q.trim(),
+                }))
+            : [];
+
+        return res.json(verificationQuestions);
+      } catch (err: any) {
+        log(
+          `GET /api/items/:id/verification-questions error: ${
+            err?.message || err
+          }`
+        );
+
+        return res.status(500).json({
+          message: "Could not load verification questions",
         });
       }
-
-      const item = await storage.getItem(itemId);
-
-      if (!item) {
-        return res.status(404).json({
-          message: "Item not found",
-        });
-      }
-
-      if (item.type !== "found") {
-        return res.status(400).json({
-          message:
-            "Verification questions are only available for found items",
-        });
-      }
-
-      const privateFields = (item as any).privateFields;
-
-      const verificationQuestions =
-        privateFields &&
-        Array.isArray(privateFields.verificationQuestions)
-          ? privateFields.verificationQuestions
-              .filter(
-                (question: any) =>
-                  question &&
-                  typeof question.q === "string" &&
-                  question.q.trim().length > 0
-              )
-              .map((question: any) => ({
-                q: question.q.trim(),
-              }))
-          : [];
-
-      return res.json(verificationQuestions);
-    } catch (err: any) {
-      log(
-        `GET /api/items/:id/verification-questions error: ${
-          err?.message || err
-        }`
-      );
-
-      return res.status(500).json({
-        message: "Could not load verification questions",
-      });
     }
-  });
+  );
 
   // ============================================================
   // CLAIM SUBMISSION
@@ -211,12 +215,6 @@ export async function registerRoutes(
             }))
         : [];
 
-      if (answers.length === 0) {
-        return res.status(400).json({
-          message: "Please provide identifying details",
-        });
-      }
-
       // ========================================================
       // OWNER VERIFICATION
       // ========================================================
@@ -224,11 +222,28 @@ export async function registerRoutes(
       const storedVerification =
         (item as any).privateFields?.verificationQuestions ?? [];
 
-      if (
+      const hasVerificationQuestions =
         Array.isArray(storedVerification) &&
-        storedVerification.length > 0
-      ) {
-        // Every stored verification question must be answered.
+        storedVerification.some(
+          (question: any) =>
+            question &&
+            typeof question.q === "string" &&
+            question.q.trim().length > 0
+        );
+
+      // ========================================================
+      // CASE 1:
+      // FINDER CREATED VERIFICATION QUESTIONS
+      // ========================================================
+
+      if (hasVerificationQuestions) {
+        // The claimant must answer every verification question.
+        if (answers.length === 0) {
+          return res.status(400).json({
+            message: "Please answer all verification questions",
+          });
+        }
+
         for (const sq of storedVerification) {
           const storedQ =
             typeof sq.q === "string" ? sq.q.trim() : "";
@@ -284,22 +299,40 @@ export async function registerRoutes(
       }
 
       // ========================================================
-      // FALLBACK WHEN NO VERIFICATION QUESTIONS EXIST
+      // CASE 2:
+      // FINDER DID NOT CREATE VERIFICATION QUESTIONS
       // ========================================================
+      //
+      // The claimant is still allowed to submit a claim.
+      //
+      // Because there are no private verification questions,
+      // the system cannot automatically verify ownership.
+      //
+      // The claim is therefore sent to the admin for MANUAL
+      // verification before the item is released.
+      //
 
       const claim = await storage.createClaim(
         itemId,
         claimantName,
         claimantEmail,
-        answers,
+        answers.length > 0 ? answers : null,
         0
+      );
+
+      // Keep the item in the pending state while staff manually
+      // verifies that the claimant is the legitimate owner.
+      await storage.updateItemStatus(
+        itemId,
+        "pending_verification"
       );
 
       return res.status(201).json({
         claimId: claim.id,
         matchScore: 0,
+        manualVerification: true,
         message:
-          "Claim submitted successfully. Staff will review your claim.",
+          "Claim submitted successfully. Staff must manually verify ownership before releasing the item.",
       });
     } catch (err: any) {
       log(
@@ -327,8 +360,6 @@ export async function registerRoutes(
   // ------------------------------------------------------------
   // GET ALL PENDING CLAIMS
   // ------------------------------------------------------------
-  //
-  // This is the endpoint used by the Admin dashboard:
   //
   // GET /api/claims
   //
@@ -384,8 +415,13 @@ export async function registerRoutes(
 
       // Newest claims first.
       pendingClaims.sort((a, b) => {
-        const aDate = new Date(a.created_at || 0).getTime();
-        const bDate = new Date(b.created_at || 0).getTime();
+        const aDate = new Date(
+          a.created_at || 0
+        ).getTime();
+
+        const bDate = new Date(
+          b.created_at || 0
+        ).getTime();
 
         return bDate - aDate;
       });
@@ -408,53 +444,57 @@ export async function registerRoutes(
   // GET CLAIMS FOR ONE ITEM
   // ------------------------------------------------------------
 
-  app.get("/api/items/:id/claims", async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({
-          message: "Unauthorized",
+  app.get(
+    "/api/items/:id/claims",
+    async (req, res) => {
+      try {
+        if (!req.isAuthenticated()) {
+          return res.status(401).json({
+            message: "Unauthorized",
+          });
+        }
+
+        const user = req.user as any;
+
+        if (user?.isAdmin !== "true") {
+          return res.status(403).json({
+            message: "Admin access required",
+          });
+        }
+
+        const itemId = Number(req.params.id);
+
+        if (!Number.isInteger(itemId)) {
+          return res.status(400).json({
+            message: "Invalid item ID",
+          });
+        }
+
+        const item = await storage.getItem(itemId);
+
+        if (!item) {
+          return res.status(404).json({
+            message: "Item not found",
+          });
+        }
+
+        const claims =
+          await storage.getClaimsForItem(itemId);
+
+        return res.json(claims);
+      } catch (err: any) {
+        log(
+          `GET /api/items/:id/claims error: ${
+            err?.message || err
+          }`
+        );
+
+        return res.status(500).json({
+          message: "Could not load claims",
         });
       }
-
-      const user = req.user as any;
-
-      if (user?.isAdmin !== "true") {
-        return res.status(403).json({
-          message: "Admin access required",
-        });
-      }
-
-      const itemId = Number(req.params.id);
-
-      if (!Number.isInteger(itemId)) {
-        return res.status(400).json({
-          message: "Invalid item ID",
-        });
-      }
-
-      const item = await storage.getItem(itemId);
-
-      if (!item) {
-        return res.status(404).json({
-          message: "Item not found",
-        });
-      }
-
-      const claims = await storage.getClaimsForItem(itemId);
-
-      return res.json(claims);
-    } catch (err: any) {
-      log(
-        `GET /api/items/:id/claims error: ${
-          err?.message || err
-        }`
-      );
-
-      return res.status(500).json({
-        message: "Could not load claims",
-      });
     }
-  });
+  );
 
   // ------------------------------------------------------------
   // REVIEW CLAIM
@@ -468,145 +508,182 @@ export async function registerRoutes(
   //   claim -> rejected
   //   item  -> pending_verification
   //
-  app.post("/api/claims/:id/review", async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({
-          message: "Unauthorized",
+  app.post(
+    "/api/claims/:id/review",
+    async (req, res) => {
+      try {
+        if (!req.isAuthenticated()) {
+          return res.status(401).json({
+            message: "Unauthorized",
+          });
+        }
+
+        const user = req.user as any;
+
+        if (user?.isAdmin !== "true") {
+          return res.status(403).json({
+            message: "Admin access required",
+          });
+        }
+
+        const claimId = Number(req.params.id);
+        const { action, notes } = req.body ?? {};
+
+        if (!Number.isInteger(claimId)) {
+          return res.status(400).json({
+            message: "Invalid claim ID",
+          });
+        }
+
+        if (
+          action !== "accept" &&
+          action !== "reject"
+        ) {
+          return res.status(400).json({
+            message:
+              "Action must be accept or reject",
+          });
+        }
+
+        const claim =
+          await storage.getClaimById(claimId);
+
+        if (!claim) {
+          return res.status(404).json({
+            message: "Claim not found",
+          });
+        }
+
+        if (claim.status !== "pending") {
+          return res.status(400).json({
+            message:
+              "This claim has already been reviewed",
+          });
+        }
+
+        const result =
+          await storage.reviewClaim(
+            claimId,
+            user.email || user.id || "admin",
+            action,
+            typeof notes === "string"
+              ? notes
+              : undefined,
+            action === "accept"
+              ? "claimed"
+              : "pending_verification"
+          );
+
+        return res.json(result);
+      } catch (err: any) {
+        log(
+          `POST /api/claims/:id/review error: ${
+            err?.message || err
+          }`
+        );
+
+        return res.status(500).json({
+          message: "Could not review claim",
         });
       }
-
-      const user = req.user as any;
-
-      if (user?.isAdmin !== "true") {
-        return res.status(403).json({
-          message: "Admin access required",
-        });
-      }
-
-      const claimId = Number(req.params.id);
-      const { action, notes } = req.body ?? {};
-
-      if (!Number.isInteger(claimId)) {
-        return res.status(400).json({
-          message: "Invalid claim ID",
-        });
-      }
-
-      if (action !== "accept" && action !== "reject") {
-        return res.status(400).json({
-          message: "Action must be accept or reject",
-        });
-      }
-
-      const claim = await storage.getClaimById(claimId);
-
-      if (!claim) {
-        return res.status(404).json({
-          message: "Claim not found",
-        });
-      }
-
-      if (claim.status !== "pending") {
-        return res.status(400).json({
-          message: "This claim has already been reviewed",
-        });
-      }
-
-      const result = await storage.reviewClaim(
-        claimId,
-        user.email || user.id || "admin",
-        action,
-        typeof notes === "string" ? notes : undefined,
-        action === "accept"
-          ? "claimed"
-          : "pending_verification"
-      );
-
-      return res.json(result);
-    } catch (err: any) {
-      log(
-        `POST /api/claims/:id/review error: ${
-          err?.message || err
-        }`
-      );
-
-      return res.status(500).json({
-        message: "Could not review claim",
-      });
     }
-  });
+  );
 
   // ============================================================
   // CREATE ITEM
   // ============================================================
 
-  app.post(api.items.create.path, async (req, res) => {
-    try {
-      log(
-        `POST /api/items - Received data: ${JSON.stringify(
-          req.body
-        )}`
-      );
-
-      const input = api.items.create.input.parse(req.body);
-
-      log(`POST /api/items - Validation successful`);
-
-      const item = await storage.createItem(input);
-
-      log(
-        `POST /api/items - Database insert successful: ID ${item.id}`
-      );
-
-      // Intelligent auto-matching.
+  app.post(
+    api.items.create.path,
+    async (req, res) => {
       try {
-        const matches = await storage.findPotentialMatches(item);
+        log(
+          `POST /api/items - Received data: ${JSON.stringify(
+            req.body
+          )}`
+        );
 
-        if (matches.length > 0) {
-          sendMatchNotification(item, matches).catch((err) =>
-            log(`Match Notification Error: ${err}`)
+        const input =
+          api.items.create.input.parse(req.body);
+
+        log(
+          `POST /api/items - Validation successful`
+        );
+
+        const item =
+          await storage.createItem(input);
+
+        log(
+          `POST /api/items - Database insert successful: ID ${item.id}`
+        );
+
+        // Intelligent auto-matching.
+        try {
+          const matches =
+            await storage.findPotentialMatches(
+              item
+            );
+
+          if (matches.length > 0) {
+            sendMatchNotification(
+              item,
+              matches
+            ).catch((err) =>
+              log(
+                `Match Notification Error: ${err}`
+              )
+            );
+          }
+        } catch (matchErr) {
+          log(
+            `Matching logic error (continuing): ${matchErr}`
           );
         }
-      } catch (matchErr) {
-        log(`Matching logic error (continuing): ${matchErr}`);
-      }
 
-      // Fire-and-forget email notification.
-      sendItemNotification(item).catch((err) =>
-        log(`Notification Error: ${err}`)
-      );
+        // Fire-and-forget email notification.
+        sendItemNotification(item).catch(
+          (err) =>
+            log(
+              `Notification Error: ${err}`
+            )
+        );
 
-      res.status(201).json(item);
-    } catch (err: any) {
-      log(
-        `POST /api/items - CRITICAL ERROR: ${err.message}`
-      );
+        res.status(201).json(item);
+      } catch (err: any) {
+        log(
+          `POST /api/items - CRITICAL ERROR: ${err.message}`
+        );
 
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join("."),
+        if (err instanceof z.ZodError) {
+          return res.status(400).json({
+            message:
+              err.errors[0].message,
+            field:
+              err.errors[0].path.join("."),
+          });
+        }
+
+        res.status(500).json({
+          message:
+            "Internal Server Error",
+          details: err.message,
+          stack:
+            process.env.NODE_ENV ===
+            "development"
+              ? err.stack
+              : undefined,
         });
       }
-
-      res.status(500).json({
-        message: "Internal Server Error",
-        details: err.message,
-        stack:
-          process.env.NODE_ENV === "development"
-            ? err.stack
-            : undefined,
-      });
     }
-  });
+  );
 
   // ============================================================
   // STATS
   // ============================================================
 
   app.get("/api/stats", async (req, res) => {
-    const stats = await storage.getStats();
+    const stats =
+      await storage.getStats();
 
     res.json(stats);
   });
@@ -615,61 +692,82 @@ export async function registerRoutes(
   // UPDATE ITEM STATUS
   // ============================================================
 
-  app.patch(api.items.updateStatus.path, async (req, res) => {
-    try {
-      const { status, claimedBy } = req.body;
+  app.patch(
+    api.items.updateStatus.path,
+    async (req, res) => {
+      try {
+        const {
+          status,
+          claimedBy,
+        } = req.body;
 
-      const item = await storage.updateItemStatus(
-        Number(req.params.id),
-        status,
-        claimedBy
-      );
+        const item =
+          await storage.updateItemStatus(
+            Number(req.params.id),
+            status,
+            claimedBy
+          );
 
-      if (!item) {
-        return res.status(404).json({
-          message: "Item not found",
+        if (!item) {
+          return res.status(404).json({
+            message: "Item not found",
+          });
+        }
+
+        res.json(item);
+      } catch (err) {
+        res.status(400).json({
+          message: "Invalid status",
         });
       }
-
-      res.json(item);
-    } catch (err) {
-      res.status(400).json({
-        message: "Invalid status",
-      });
     }
-  });
+  );
 
   // ============================================================
   // DELETE ITEM
   // ============================================================
 
-  app.delete(api.items.delete.path, async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({
-        message: "Unauthorized",
-      });
+  app.delete(
+    api.items.delete.path,
+    async (req, res) => {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({
+          message: "Unauthorized",
+        });
+      }
+
+      await storage.deleteItem(
+        Number(req.params.id)
+      );
+
+      res.status(204).send();
     }
-
-    await storage.deleteItem(Number(req.params.id));
-
-    res.status(204).send();
-  });
+  );
 
   // ============================================================
   // SEED ADMIN USER
   // ============================================================
 
   try {
-    const adminEmail = "admin@bwcampus.com";
+    const adminEmail =
+      "admin@bwcampus.com";
 
     const adminUser =
-      await storage.getUserByEmail(adminEmail);
+      await storage.getUserByEmail(
+        adminEmail
+      );
 
-    const crypto = await import("crypto");
+    const crypto =
+      await import("crypto");
 
-    const hashedPassword = crypto
-      .scryptSync("admin123", "salt", 64)
-      .toString("hex");
+    const hashedPassword =
+      crypto
+        .scryptSync(
+          "admin123",
+          "salt",
+          64
+        )
+        .toString("hex");
 
     if (!adminUser) {
       await storage.createUser({
@@ -687,10 +785,14 @@ export async function registerRoutes(
       !adminUser.password ||
       adminUser.isAdmin !== "true"
     ) {
-      await storage.updateUser(adminUser.id, {
-        password: hashedPassword,
-        isAdmin: "true",
-      });
+      await storage.updateUser(
+        adminUser.id,
+        {
+          password:
+            hashedPassword,
+          isAdmin: "true",
+        }
+      );
 
       log(
         "Admin user updated: admin@bwcampus.com / admin123"
@@ -707,18 +809,30 @@ export async function registerRoutes(
   // ============================================================
 
   if (!process.env.VERCEL) {
-    setInterval(async () => {
-      try {
-        const expiredItems =
-          await storage.getExpiredItems(30);
+    setInterval(
+      async () => {
+        try {
+          const expiredItems =
+            await storage.getExpiredItems(
+              30
+            );
 
-        if (expiredItems.length > 0) {
-          sendExpiryAlert(expiredItems);
+          if (
+            expiredItems.length > 0
+          ) {
+            sendExpiryAlert(
+              expiredItems
+            );
+          }
+        } catch (err) {
+          console.error(
+            "Expiry Alert Error:",
+            err
+          );
         }
-      } catch (err) {
-        console.error("Expiry Alert Error:", err);
-      }
-    }, 1000 * 60 * 60 * 24);
+      },
+      1000 * 60 * 60 * 24
+    );
   }
 
   // Initial expiry check on startup.
@@ -730,46 +844,59 @@ export async function registerRoutes(
       }
     })
     .catch((err) =>
-      console.error("Initial Expiry Check Error:", err)
+      console.error(
+        "Initial Expiry Check Error:",
+        err
+      )
     );
 
   // ============================================================
   // HEALTH CHECK
   // ============================================================
 
-  app.get("/api/health", async (req, res) => {
-    try {
-      const { items } =
-        await import("../../shared/schema.js");
+  app.get(
+    "/api/health",
+    async (req, res) => {
+      try {
+        const { items } =
+          await import(
+            "../../shared/schema.js"
+          );
 
-      const { db } = await import("./db.js");
+        const { db } =
+          await import("./db.js");
 
-      const result = await db
-        .select()
-        .from(items)
-        .limit(1);
+        const result =
+          await db
+            .select()
+            .from(items)
+            .limit(1);
 
-      res.json({
-        status: "connected",
-        database: "Vercel Postgres / Neon",
-        itemCount: result.length,
-        migrationStatus:
-          "Success (Items table found)",
-      });
-    } catch (err: any) {
-      log(
-        `Health Check Failed: ${err.message}`
-      );
+        res.json({
+          status: "connected",
+          database:
+            "Vercel Postgres / Neon",
+          itemCount:
+            result.length,
+          migrationStatus:
+            "Success (Items table found)",
+        });
+      } catch (err: any) {
+        log(
+          `Health Check Failed: ${err.message}`
+        );
 
-      res.status(500).json({
-        status: "error",
-        message: err.message,
-        stack: err.stack,
-        hint:
-          "Check your POSTGRES_URL and ensure the migrations have run.",
-      });
+        res.status(500).json({
+          status: "error",
+          message: err.message,
+          stack: err.stack,
+          hint:
+            "Check your POSTGRES_URL and ensure the migrations have run.",
+        });
+      }
     }
-  });
+  );
 
   return httpServer;
 }
+
