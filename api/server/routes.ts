@@ -562,7 +562,10 @@ export async function registerRoutes(
           });
         }
 
-        if (claim.status !== "pending") {
+        if (
+          claim.status !== "pending" &&
+          claim.status !== "manual_verification"
+        ) {
           return res.status(400).json({
             message:
               "This claim has already been reviewed",
