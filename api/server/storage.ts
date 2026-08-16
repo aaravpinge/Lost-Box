@@ -184,35 +184,32 @@ export class DatabaseStorage implements IStorage {
 
   // Claims methods
   async createClaim(itemId: number, claimantName: string | undefined, claimantEmail: string | undefined, claimedDetails: any, matchScore: number = 0): Promise<any> {
-    const [claim] = await db.insert(claims).values({
-      item_id: itemId,
-      claimant_name: claimantName || null,
-      claimant_email: claimantEmail || null,
-      claimed_details: JSON.stringify(claimedDetails),
-      match_score: matchScore,
-      status: matchScore > 0 ? 'needs_review' : 'pending'
-    }).returning();
-    return claim;
-  }
+-    const [claim] = await db.insert(claims).values({
+-      item_id: itemId,
+-      claimant_name: claimantName || null,
+-      claimant_email: claimantEmail || null,
+-      claimed_details: JSON.stringify(claimedDetails),
+-      match_score: matchScore,
+-      status: matchScore > 0 ? 'needs_review' : 'pending'
+-    }).returning();
+-    return claim;
++    // claimed_details is defined NOT NULL in migration. Use '{}' as a minimal
++    // safe representation when we intentionally do not store claimant answers.
++    const claimedDetailsJson = claimedDetails == null ? JSON.stringify({}) : JSON.stringify(claimedDetails);
++
++    const [claim] = await db.insert(claims).values({
++      item_id: itemId,
++      claimant_name: claimantName || null,
++      claimant_email: claimantEmail || null,
++      claimed_details: claimedDetailsJson,
++      match_score: matchScore,
++      status: matchScore > 0 ? 'needs_review' : 'pending'
++    }).returning();
++    return claim;
+   }
 
-  async getClaimsForItem(itemId: number): Promise<any[]> {
-    return await db.select().from(claims).where(eq(claims.item_id, itemId)).orderBy(desc(claims.created_at));
-  }
+   async getClaimsForItem(itemId: number): Promise<any[]> {
+     return await db.select().from(claims).where(eq(claims.item_id, itemId)).orderBy(desc(claims.created_at));
+   }
 
-  async getClaimById(claimId: number): Promise<any | undefined> {
-    const [c] = await db.select().from(claims).where(eq(claims.id, claimId));
-    return c;
-  }
-
-  async reviewClaim(claimId: number, reviewer: string, action: 'accept' | 'reject', notes?: string, setStatus?: string): Promise<any> {
-    const status = action === 'accept' ? 'accepted' : 'rejected';
-    const [claim] = await db.update(claims).set({ status, reviewed_at: new Date(), reviewer, notes: notes || null }).where(eq(claims.id, claimId)).returning();
-    if (!claim) return undefined;
-    if (action === 'accept' && claim.item_id && setStatus) {
-      await this.updateItemStatus(claim.item_id, setStatus);
-    }
-    return claim;
-  }
-}
-
-export const storage = new DatabaseStorage();
+*** End of file update ***)
