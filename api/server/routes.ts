@@ -45,7 +45,8 @@ export async function registerRoutes(
     delete out.privateFields;
     res.json(out);
   });
-  // Consolidated: Return public verification questions for a found item.
+
+  // Return public verification questions for a found item.
   // Never return the stored answers or answer hashes.
   app.get("/api/items/:id/verification-questions", async (req, res) => {
     try {
@@ -67,7 +68,8 @@ export async function registerRoutes(
 
       if (item.type !== "found") {
         return res.status(400).json({
-          message: "Verification questions are only available for found items",
+          message:
+            "Verification questions are only available for found items",
         });
       }
 
@@ -90,13 +92,18 @@ export async function registerRoutes(
 
       return res.json(verificationQuestions);
     } catch (err: any) {
-      log(`GET /api/items/:id/verification-questions error: ${err?.message || err}`);
+      log(
+        `GET /api/items/:id/verification-questions error: ${
+          err?.message || err
+        }`
+      );
 
       return res.status(500).json({
         message: "Could not load verification questions",
       });
     }
   });
+
   // Submit a claim for a found item
   app.post(api.items.claim.path, async (req, res) => {
     try {
@@ -162,6 +169,18 @@ export async function registerRoutes(
         });
       }
 
+      // Only allow approved Birmingham Charter school email domains.
+      const allowedSchoolEmail =
+        /^[^\s@]+@(stu\.birminghamcharter\.com|bcchs\.net)$/i;
+
+      if (!allowedSchoolEmail.test(claimantEmail)) {
+        return res.status(400).json({
+          message:
+            "Please use your Birmingham Charter school email (@stu.birminghamcharter.com or @bcchs.net)",
+          field: "claimantEmail",
+        });
+      }
+
       const answers = Array.isArray(input?.answers)
         ? input.answers
             .filter(
@@ -183,52 +202,92 @@ export async function registerRoutes(
         });
       }
 
-      // If the item has stored verification questions, require verification-first
-      const storedVerification = (item as any).privateFields?.verificationQuestions ?? [];
+      // If the item has stored verification questions,
+      // require verification before creating the claim.
+      const storedVerification =
+        (item as any).privateFields?.verificationQuestions ?? [];
 
-      if (Array.isArray(storedVerification) && storedVerification.length > 0) {
-        // Require answers for every stored question
+      if (
+        Array.isArray(storedVerification) &&
+        storedVerification.length > 0
+      ) {
+        // Require answers for every stored question.
         for (const sq of storedVerification) {
-          const storedQ = typeof sq.q === "string" ? sq.q.trim() : "";
-          if (!storedQ) continue;
-          const provided = answers.find((a) => a.q.trim() === storedQ);
-          if (!provided) {
-            return res.status(400).json({ message: "Please answer all verification questions" });
+          const storedQ =
+            typeof sq.q === "string" ? sq.q.trim() : "";
+
+          if (!storedQ) {
+            continue;
           }
+
+          const provided = answers.find(
+            (a) => a.q.trim() === storedQ
+          );
+
+          if (!provided) {
+            return res.status(400).json({
+              message: "Please answer all verification questions",
+            });
+          }
+
           if (!verifyAnswer(provided.a, sq.aHash)) {
-            // wrong answer: do not create a claim and do not change item status
-            return res.status(400).json({ message: "Verification failed" });
+            // Wrong answer: do not create a claim
+            // and do not change item status.
+            return res.status(400).json({
+              message: "Verification failed",
+            });
           }
         }
 
-        // All verification answers matched. Create a single claim with status 'pending'
-        // and do NOT store claimant-provided verification answers.
-        const claim = await storage.createClaim(itemId, claimantName, claimantEmail, null, 0);
+        // All verification answers matched.
+        // Create a pending claim without storing the answers.
+        const claim = await storage.createClaim(
+          itemId,
+          claimantName,
+          claimantEmail,
+          null,
+          0
+        );
 
-        // Set item status to pending_verification (do not mark as claimed)
-        await storage.updateItemStatus(itemId, "pending_verification");
+        // Keep the item pending until staff review.
+        await storage.updateItemStatus(
+          itemId,
+          "pending_verification"
+        );
 
         return res.status(201).json({
           claimId: claim.id,
           matchScore: 0,
-          message: "Claim submitted successfully. Staff will review your claim.",
+          message:
+            "Claim submitted successfully. Staff will review your claim.",
         });
       } else {
-        // No stored verification questions: preserve existing fallback behavior
-        const claim = await storage.createClaim(itemId, claimantName, claimantEmail, answers, 0);
+        // No stored verification questions:
+        // preserve existing fallback behavior.
+        const claim = await storage.createClaim(
+          itemId,
+          claimantName,
+          claimantEmail,
+          answers,
+          0
+        );
 
         return res.status(201).json({
           claimId: claim.id,
           matchScore: 0,
-          message: "Claim submitted successfully. Staff will review your claim.",
+          message:
+            "Claim submitted successfully. Staff will review your claim.",
         });
       }
     } catch (err: any) {
-      log(`POST /api/items/:id/claim error: ${err.message}`);
+      log(
+        `POST /api/items/:id/claim error: ${err.message}`
+      );
 
       if (err instanceof z.ZodError) {
         return res.status(400).json({
-          message: err.errors[0]?.message || "Invalid claim data",
+          message:
+            err.errors[0]?.message || "Invalid claim data",
           field: err.errors[0]?.path?.join("."),
         });
       }
@@ -242,7 +301,9 @@ export async function registerRoutes(
   app.post(api.items.create.path, async (req, res) => {
     try {
       log(
-        `POST /api/items - Received data: ${JSON.stringify(req.body)}`
+        `POST /api/items - Received data: ${JSON.stringify(
+          req.body
+        )}`
       );
 
       const input = api.items.create.input.parse(req.body);
@@ -255,7 +316,7 @@ export async function registerRoutes(
         `POST /api/items - Database insert successful: ID ${item.id}`
       );
 
-      // Trigger Intelligent Auto-Matching
+      // Trigger Intelligent Auto-Matching.
       try {
         const matches = await storage.findPotentialMatches(item);
 
@@ -268,7 +329,7 @@ export async function registerRoutes(
         log(`Matching logic error (continuing): ${matchErr}`);
       }
 
-      // Fire and forget email notification
+      // Fire and forget email notification.
       sendItemNotification(item).catch((err) =>
         log(`Notification Error: ${err}`)
       );
@@ -361,21 +422,19 @@ export async function registerRoutes(
         description: "Math textbook",
         location: "Library",
         contactName: "Jane Doe",
-        contactEmail: "jane@bwscampus.com",
+        contactEmail: "jane@bwcampus.com",
         dateLost: new Date().toISOString(),
         dateFound: null,
         category: "Books",
       });
     }
   } catch (err) {
-    log(
-      `Warning: Initial data seeding skipped: ${err}`
-    );
+    log(`Warning: Initial data seeding skipped: ${err}`);
   }
 
   // Seed admin user
   try {
-    const adminEmail = "admin@bwscampus.com";
+    const adminEmail = "admin@bwcampus.com";
 
     const adminUser =
       await storage.getUserByEmail(adminEmail);
@@ -396,7 +455,7 @@ export async function registerRoutes(
       });
 
       log(
-        "Admin user created: admin@bwscampus.com / admin123"
+        "Admin user created: admin@bwcampus.com / admin123"
       );
     } else if (
       !adminUser.password ||
@@ -408,7 +467,7 @@ export async function registerRoutes(
       });
 
       log(
-        "Admin user updated: admin@bwscampus.com / admin123"
+        "Admin user updated: admin@bwcampus.com / admin123"
       );
     }
   } catch (err) {
@@ -481,3 +540,4 @@ export async function registerRoutes(
 
   return httpServer;
 }
+
