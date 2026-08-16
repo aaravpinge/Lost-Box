@@ -99,7 +99,7 @@ export async function registerRoutes(
     }
   });
 
-  // Submit a claim for a found item
+  // Submit a claim for a found item.
   app.post(api.items.claim.path, async (req, res) => {
     try {
       const itemId = Number(req.params.id);
@@ -246,7 +246,7 @@ export async function registerRoutes(
         `POST /api/items - Database insert successful: ID ${item.id}`
       );
 
-      // Trigger Intelligent Auto-Matching
+      // Trigger Intelligent Auto-Matching.
       try {
         const matches = await storage.findPotentialMatches(item);
 
@@ -259,7 +259,7 @@ export async function registerRoutes(
         log(`Matching logic error (continuing): ${matchErr}`);
       }
 
-      // Fire and forget email notification
+      // Fire and forget email notification.
       sendItemNotification(item).catch((err) =>
         log(`Notification Error: ${err}`)
       );
@@ -329,7 +329,7 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // Seed data
+  // Seed data.
   try {
     const existing = await storage.getItems();
 
@@ -364,7 +364,7 @@ export async function registerRoutes(
     );
   }
 
-  // Seed admin user
+  // Seed admin user.
   try {
     const adminEmail = "admin@bwcampus.com";
 
@@ -408,7 +408,7 @@ export async function registerRoutes(
     );
   }
 
-  // Setup Smart Expiry & Donation Alerts (Daily check)
+  // Setup Smart Expiry & Donation Alerts (Daily check).
   if (!process.env.VERCEL) {
     setInterval(async () => {
       try {
@@ -424,7 +424,7 @@ export async function registerRoutes(
     }, 1000 * 60 * 60 * 24);
   }
 
-  // Initial check on startup
+  // Initial check on startup.
   storage
     .getExpiredItems(30)
     .then((items) => {
@@ -436,7 +436,7 @@ export async function registerRoutes(
       console.error("Initial Expiry Check Error:", err)
     );
 
-  // Health Check Endpoint
+  // Health Check Endpoint.
   app.get("/api/health", async (req, res) => {
     try {
       const { items } =
