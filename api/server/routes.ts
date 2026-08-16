@@ -399,39 +399,7 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // Seed data
-  try {
-    const existing = await storage.getItems();
-
-    if (existing.length === 0) {
-      log("Seeding initial sample data...");
-
-      await storage.createItem({
-        type: "found",
-        description: "Blue water bottle",
-        location: "Gym",
-        contactName: "Coach Smith",
-        contactEmail: "smith@bwscampus.com",
-        dateFound: new Date().toISOString(),
-        dateLost: null,
-        category: "Water Bottles",
-      });
-
-      await storage.createItem({
-        type: "lost",
-        description: "Math textbook",
-        location: "Library",
-        contactName: "Jane Doe",
-        contactEmail: "jane@bwcampus.com",
-        dateLost: new Date().toISOString(),
-        dateFound: null,
-        category: "Books",
-      });
-    }
-  } catch (err) {
-    log(`Warning: Initial data seeding skipped: ${err}`);
-  }
-
+  // Seed admin user
   // Seed admin user
   try {
     const adminEmail = "admin@bwcampus.com";
