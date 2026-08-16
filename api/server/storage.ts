@@ -1,3 +1,4 @@
+```ts
 import { db } from "./db.js";
 import {
   items,
@@ -43,7 +44,8 @@ export interface IStorage {
     claimantName: string | undefined,
     claimantEmail: string | undefined,
     claimedDetails: any,
-    matchScore?: number
+    matchScore?: number,
+    status?: string
   ): Promise<any>;
   getClaimsForItem(itemId: number): Promise<any[]>;
   getClaimById(claimId: number): Promise<any | undefined>;
@@ -330,12 +332,21 @@ export class DatabaseStorage implements IStorage {
   // CLAIMS
   // ============================================================
 
-  // Return only pending claims for the admin dashboard.
+  // Return claims that require admin attention.
+  //
+  // "pending" = claimant passed the verification questions.
+  // "manual_verification" = finder provided no verification
+  // questions, so the admin must manually verify ownership.
   async getPendingClaims(): Promise<any[]> {
     return await db
       .select()
       .from(claims)
-      .where(eq(claims.status, "pending"))
+      .where(
+        or(
+          eq(claims.status, "pending"),
+          eq(claims.status, "manual_verification")
+        )
+      )
       .orderBy(desc(claims.created_at));
   }
 
@@ -344,7 +355,8 @@ export class DatabaseStorage implements IStorage {
     claimantName: string | undefined,
     claimantEmail: string | undefined,
     claimedDetails: any,
-    matchScore: number = 0
+    matchScore: number = 0,
+    status: string = "pending"
   ): Promise<any> {
     const claimedDetailsJson =
       claimedDetails == null
@@ -359,10 +371,7 @@ export class DatabaseStorage implements IStorage {
         claimant_email: claimantEmail || null,
         claimed_details: claimedDetailsJson,
         match_score: matchScore,
-        status:
-          matchScore > 0
-            ? "needs_review"
-            : "pending",
+        status,
       })
       .returning();
 
@@ -433,3 +442,4 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+```
