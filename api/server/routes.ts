@@ -122,10 +122,7 @@ export async function registerRoutes(
         });
       }
 
-      if (
-        item.status !== "reported" &&
-        item.status !== "pending_verification"
-      ) {
+      if (item.status !== "reported") {
         return res.status(400).json({
           message: "This item is not currently available for claiming",
         });
