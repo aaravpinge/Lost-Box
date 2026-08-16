@@ -1,4 +1,4 @@
-```ts
+
 import { db } from "./db.js";
 import {
   items,
@@ -442,4 +442,4 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
-```
+
