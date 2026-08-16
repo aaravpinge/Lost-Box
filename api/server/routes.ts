@@ -122,7 +122,13 @@ export async function registerRoutes(
         });
       }
 
-      if (item.status !== "reported") {
+      if (
+        item.status !== "reported" &&
+        !(
+          item.status === "pending_verification" &&
+          (await storage.getClaimsForItem(itemId)).length === 0
+        )
+      ) {
         return res.status(400).json({
           message: "This item is not currently available for claiming",
         });
