@@ -34,6 +34,7 @@ import {
   ShieldCheck,
   XCircle,
   UserCheck,
+  RefreshCw,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
@@ -61,11 +62,16 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("all");
 
   const [claims, setClaims] = useState<Claim[]>([]);
-  const [claimsLoading, setClaimsLoading] = useState(true);
-  const [reviewingClaimId, setReviewingClaimId] = useState<number | null>(null);
-  const [claimError, setClaimError] = useState("");
+  const [claimsLoading, setClaimsLoading] = useState(false);
+  const [claimActionLoading, setClaimActionLoading] = useState<number | null>(
+    null
+  );
 
-  const { data: items, isLoading: itemsLoading } = useItems(undefined, search);
+  const { data: items, isLoading: itemsLoading } = useItems(
+    undefined,
+    search
+  );
+
   const updateStatus = useUpdateItemStatus();
   const deleteItem = useDeleteItem();
 
@@ -75,14 +81,24 @@ export default function Admin() {
     return null;
   }
 
-  // Load claims for the admin.
+  /*
+   * Load claims for the admin dashboard.
+   *
+   * The backend already protects /api/claims so only authorized
+   * administrators can retrieve them.
+   */
   const loadClaims = async () => {
+    if (!user || user.isAdmin !== "true") return;
+
     try {
       setClaimsLoading(true);
-      setClaimError("");
 
       const response = await fetch("/api/claims", {
+        method: "GET",
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
       });
 
       if (!response.ok) {
@@ -90,10 +106,15 @@ export default function Admin() {
       }
 
       const data = await response.json();
-      setClaims(Array.isArray(data) ? data : []);
+
+      if (Array.isArray(data)) {
+        setClaims(data);
+      } else {
+        setClaims([]);
+      }
     } catch (error) {
       console.error("Failed to load claims:", error);
-      setClaimError("Could not load pending claims.");
+      setClaims([]);
     } finally {
       setClaimsLoading(false);
     }
@@ -103,7 +124,73 @@ export default function Admin() {
     if (!userLoading && user?.isAdmin === "true") {
       loadClaims();
     }
-  }, [userLoading, user]);
+  }, [userLoading, user?.isAdmin]);
+
+  /*
+   * Review a claim.
+   *
+   * IMPORTANT:
+   * We intentionally do NOT directly change the item's status here.
+   * The backend review endpoint owns that workflow so the claim and
+   * item status remain synchronized.
+   */
+  const handleClaimReview = async (
+    claimId: number,
+    action: "accept" | "reject"
+  ) => {
+    const claim = claims.find((c) => c.id === claimId);
+
+    if (!claim) return;
+
+    const actionText = action === "accept" ? "accept" : "reject";
+
+    const confirmed = window.confirm(
+      `Are you sure you want to ${actionText} this claim from ${
+        claim.claimant_name || "this claimant"
+      }?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setClaimActionLoading(claimId);
+
+      const response = await fetch(`/api/claims/${claimId}/review`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          action,
+          notes:
+            action === "accept"
+              ? "Claim verified and accepted by administrator."
+              : "Claim rejected by administrator.",
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message || `Unable to ${actionText} claim`
+        );
+      }
+
+      await loadClaims();
+    } catch (error: any) {
+      console.error("Claim review failed:", error);
+
+      window.alert(
+        error?.message ||
+          `Unable to ${actionText} claim. Please try again.`
+      );
+    } finally {
+      setClaimActionLoading(null);
+    }
+  };
 
   if (userLoading || itemsLoading) {
     return (
@@ -126,73 +213,6 @@ export default function Admin() {
     }
   };
 
-  const handleClaimReview = async (
-    claimId: number,
-    action: "accept" | "reject"
-  ) => {
-    const message =
-      action === "accept"
-        ? "Accept this claim and verify the claimant?"
-        : "Reject this claim?";
-
-    if (!confirm(message)) {
-      return;
-    }
-
-    try {
-      setReviewingClaimId(claimId);
-      setClaimError("");
-
-      const response = await fetch(`/api/claims/${claimId}/review`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action,
-          notes:
-            action === "accept"
-              ? "Claim verified by authorized staff."
-              : "Claim rejected by authorized staff.",
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(data?.message || "Claim review failed");
-      }
-
-      // Refresh claims so the reviewed claim disappears from pending.
-      await loadClaims();
-
-      // Refresh the page so the item status is immediately reflected
-      // everywhere in the admin dashboard.
-      window.location.reload();
-    } catch (error: any) {
-      console.error("Claim review failed:", error);
-      setClaimError(
-        error?.message || "Could not review this claim. Please try again."
-      );
-    } finally {
-      setReviewingClaimId(null);
-    }
-  };
-
-  const statusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "reported":
-        return "secondary";
-      case "retrieved":
-        return "default";
-      case "donated":
-        return "outline";
-      default:
-        return "secondary";
-    }
-  };
-
   const filteredItems = items?.filter((item) => {
     if (activeTab === "all") return true;
     if (activeTab === "lost") return item.type === "lost";
@@ -205,6 +225,7 @@ export default function Admin() {
         item.status === "resolved"
       );
     }
+
     if (activeTab === "over30") {
       const baseDate = new Date(
         item.dateReported ||
@@ -277,24 +298,22 @@ export default function Admin() {
     );
 
     link.style.visibility = "hidden";
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
     URL.revokeObjectURL(url);
   };
 
-  // Pending claims only.
-  const pendingClaims = claims.filter(
-    (claim) =>
-      claim.status === "pending" ||
-      claim.status === "needs_review" ||
-      claim.status === "pending_verification"
-  );
-
-  // Metrics calculation.
+  // Metrics.
   const totalItems = items?.length || 0;
-  const lostCount = items?.filter((i) => i.type === "lost").length || 0;
-  const foundCount = items?.filter((i) => i.type === "found").length || 0;
+
+  const lostCount =
+    items?.filter((i) => i.type === "lost").length || 0;
+
+  const foundCount =
+    items?.filter((i) => i.type === "found").length || 0;
 
   const claimedCount =
     items?.filter(
@@ -323,6 +342,18 @@ export default function Admin() {
         i.status !== "resolved"
       );
     }).length || 0;
+
+  const pendingClaims = claims.filter(
+    (claim) =>
+      claim.status === "pending" ||
+      claim.status === "needs_review"
+  );
+
+  const reviewedClaims = claims.filter(
+    (claim) =>
+      claim.status === "accepted" ||
+      claim.status === "rejected"
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -360,7 +391,7 @@ export default function Admin() {
         </div>
       </section>
 
-      {/* Dashboard Metrics */}
+      {/* Metrics */}
       <div className="max-w-7xl mx-auto px-8 relative z-20 -mt-8 mb-6">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           <Card className="bg-white/90 backdrop-blur border border-slate-100 shadow-xl p-5 rounded-[1.5rem] hover:-translate-y-1 transition-all duration-300">
@@ -368,10 +399,12 @@ export default function Admin() {
               <div className="p-1.5 bg-slate-100 rounded-lg">
                 <Package className="w-4 h-4 text-slate-500" />
               </div>
+
               <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Total
               </h3>
             </div>
+
             <p className="text-3xl font-black text-slate-800 tracking-tighter">
               {totalItems}
             </p>
@@ -382,10 +415,12 @@ export default function Admin() {
               <div className="p-1.5 bg-rose-50 rounded-lg">
                 <AlertCircle className="w-4 h-4 text-rose-500" />
               </div>
+
               <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Lost
               </h3>
             </div>
+
             <p className="text-3xl font-black text-slate-800 tracking-tighter">
               {lostCount}
             </p>
@@ -396,10 +431,12 @@ export default function Admin() {
               <div className="p-1.5 bg-primary/10 rounded-lg">
                 <Search className="w-4 h-4 text-primary" />
               </div>
+
               <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Found
               </h3>
             </div>
+
             <p className="text-3xl font-black text-slate-800 tracking-tighter">
               {foundCount}
             </p>
@@ -410,25 +447,29 @@ export default function Admin() {
               <div className="p-1.5 bg-emerald-50 rounded-lg">
                 <CheckCircle className="w-4 h-4 text-emerald-500" />
               </div>
+
               <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Claimed
               </h3>
             </div>
+
             <p className="text-3xl font-black text-slate-800 tracking-tighter">
               {claimedCount}
             </p>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur border border-slate-100 shadow-xl p-5 rounded-[1.5rem]">
+          <Card className="bg-white/90 backdrop-blur border border-amber-100 shadow-xl p-5 rounded-[1.5rem] hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 bg-blue-50 rounded-lg">
-                <ShieldCheck className="w-4 h-4 text-blue-500" />
+              <div className="p-1.5 bg-amber-50 rounded-lg">
+                <ShieldCheck className="w-4 h-4 text-amber-500" />
               </div>
+
               <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Pending Claims
               </h3>
             </div>
-            <p className="text-3xl font-black text-slate-800 tracking-tighter">
+
+            <p className="text-3xl font-black text-amber-600 tracking-tighter">
               {pendingClaims.length}
             </p>
           </Card>
@@ -442,6 +483,7 @@ export default function Admin() {
               <div className="p-1.5 bg-white/60 shadow-sm rounded-lg backdrop-blur-md">
                 <Clock className="w-4 h-4 text-rose-600" />
               </div>
+
               <h3 className="text-[10px] font-black uppercase tracking-widest text-rose-500">
                 &gt; 30 Days
               </h3>
@@ -457,11 +499,11 @@ export default function Admin() {
       {/* Pending Claims */}
       <div className="max-w-7xl mx-auto px-8 pb-6 relative z-20">
         <Card className="premium-card overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-xl">
-                  <ShieldCheck className="w-5 h-5 text-blue-600" />
+                <div className="p-2 bg-amber-50 rounded-xl">
+                  <ShieldCheck className="w-5 h-5 text-amber-600" />
                 </div>
 
                 <h2 className="text-xl font-black text-slate-900 tracking-tight">
@@ -469,14 +511,14 @@ export default function Admin() {
                 </h2>
 
                 {pendingClaims.length > 0 && (
-                  <Badge className="bg-blue-100 text-blue-700 border-none rounded-full">
+                  <Badge className="bg-amber-100 text-amber-700 border-none font-black">
                     {pendingClaims.length}
                   </Badge>
                 )}
               </div>
 
               <p className="text-sm text-slate-400 font-medium mt-1 ml-12">
-                Review claimant information before releasing a found item.
+                Review ownership claims that passed verification.
               </p>
             </div>
 
@@ -484,22 +526,17 @@ export default function Admin() {
               variant="outline"
               onClick={loadClaims}
               disabled={claimsLoading}
-              className="rounded-xl"
+              className="rounded-xl font-bold border-slate-200"
             >
-              {claimsLoading ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <ShieldCheck className="w-4 h-4 mr-2" />
-              )}
-              Refresh
+              <RefreshCw
+                className={cn(
+                  "w-4 h-4 mr-2",
+                  claimsLoading && "animate-spin"
+                )}
+              />
+              Refresh Claims
             </Button>
           </div>
-
-          {claimError && (
-            <div className="mx-6 mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-600">
-              {claimError}
-            </div>
-          )}
 
           {claimsLoading ? (
             <div className="h-40 flex items-center justify-center">
@@ -507,7 +544,7 @@ export default function Admin() {
             </div>
           ) : pendingClaims.length === 0 ? (
             <div className="h-40 flex flex-col items-center justify-center text-slate-300">
-              <UserCheck className="w-10 h-10 mb-3 opacity-30" />
+              <CheckCircle className="w-10 h-10 mb-3 opacity-30" />
               <p className="font-black uppercase tracking-[0.15em] text-xs">
                 No pending claims
               </p>
@@ -516,7 +553,7 @@ export default function Admin() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-slate-50/50 border-none">
+                  <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-none">
                     <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-5 px-6">
                       Claimant
                     </TableHead>
@@ -526,15 +563,15 @@ export default function Admin() {
                     </TableHead>
 
                     <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-5">
-                      Claim Status
-                    </TableHead>
-
-                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-5">
                       Submitted
                     </TableHead>
 
+                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-5">
+                      Status
+                    </TableHead>
+
                     <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-slate-400 py-5 px-6">
-                      Verification
+                      Review
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -545,78 +582,90 @@ export default function Admin() {
                       (item) => item.id === claim.item_id
                     );
 
-                    const isReviewing = reviewingClaimId === claim.id;
+                    const isProcessing =
+                      claimActionLoading === claim.id;
 
                     return (
                       <TableRow
                         key={claim.id}
-                        className="border-slate-100 hover:bg-slate-50/70 transition-all"
+                        className="hover:bg-slate-50/80 transition-all border-slate-100"
                       >
                         <TableCell className="px-6 py-5">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                              <UserCheck className="w-5 h-5 text-blue-600" />
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                              <UserCheck className="w-5 h-5 text-primary" />
                             </div>
 
                             <div className="flex flex-col">
                               <span className="font-black text-slate-800">
-                                {claim.claimant_name || "Unknown claimant"}
+                                {claim.claimant_name ||
+                                  "Unknown claimant"}
                               </span>
 
                               <span className="text-xs font-medium text-slate-400">
-                                {claim.claimant_email || "No email"}
+                                {claim.claimant_email ||
+                                  "No email provided"}
                               </span>
                             </div>
                           </div>
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell className="py-5">
                           <div className="flex flex-col">
-                            <span className="font-black text-slate-700">
+                            <span className="font-black text-slate-800">
                               {claimedItem?.description ||
                                 `Item #${claim.item_id}`}
                             </span>
 
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            <span className="text-xs text-slate-400 font-bold">
                               Ref #{claim.item_id}
                             </span>
-
-                            {claimedItem?.location && (
-                              <span className="text-xs text-slate-400 mt-1">
-                                {claimedItem.location}
-                              </span>
-                            )}
                           </div>
                         </TableCell>
 
-                        <TableCell>
-                          <Badge className="bg-amber-100 text-amber-700 border-none rounded-xl px-3 py-1 font-black text-[10px] uppercase tracking-widest">
-                            {claim.status || "pending"}
-                          </Badge>
-                        </TableCell>
-
-                        <TableCell>
-                          <span className="text-xs font-bold text-slate-500">
+                        <TableCell className="py-5">
+                          <span className="text-sm font-bold text-slate-600">
                             {claim.created_at
                               ? format(
                                   new Date(claim.created_at),
-                                  "MMM d, yyyy h:mm a"
+                                  "MMM d, yyyy"
                                 )
-                              : "Unknown"}
+                              : "—"}
                           </span>
+
+                          {claim.created_at && (
+                            <span className="block text-[10px] font-bold text-slate-400">
+                              {format(
+                                new Date(claim.created_at),
+                                "h:mm a"
+                              )}
+                            </span>
+                          )}
                         </TableCell>
 
-                        <TableCell className="text-right px-6">
+                        <TableCell className="py-5">
+                          <Badge className="bg-amber-100 text-amber-700 border-none px-3 py-1 rounded-lg font-black text-[10px] uppercase tracking-widest">
+                            {claim.status === "needs_review"
+                              ? "Needs Review"
+                              : "Pending"}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell className="text-right px-6 py-5">
                           <div className="flex justify-end gap-2">
                             <Button
+                              size="sm"
+                              disabled={isProcessing}
                               onClick={() =>
-                                handleClaimReview(claim.id, "reject")
+                                handleClaimReview(
+                                  claim.id,
+                                  "reject"
+                                )
                               }
-                              disabled={isReviewing}
-                              variant="outline"
-                              className="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold"
+                              className="rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-100 font-black text-xs"
                             >
-                              {isReviewing ? (
+                              {isProcessing &&
+                              claimActionLoading === claim.id ? (
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                               ) : (
                                 <XCircle className="w-4 h-4 mr-2" />
@@ -625,13 +674,18 @@ export default function Admin() {
                             </Button>
 
                             <Button
+                              size="sm"
+                              disabled={isProcessing}
                               onClick={() =>
-                                handleClaimReview(claim.id, "accept")
+                                handleClaimReview(
+                                  claim.id,
+                                  "accept"
+                                )
                               }
-                              disabled={isReviewing}
-                              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                              className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-sm"
                             >
-                              {isReviewing ? (
+                              {isProcessing &&
+                              claimActionLoading === claim.id ? (
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                               ) : (
                                 <CheckCircle className="w-4 h-4 mr-2" />
@@ -650,7 +704,7 @@ export default function Admin() {
         </Card>
       </div>
 
-      {/* Existing Reports */}
+      {/* Main Reports */}
       <div className="max-w-7xl mx-auto px-8 pb-8 relative z-20">
         <Card className="premium-card overflow-hidden min-h-[600px]">
           <Tabs
@@ -804,17 +858,17 @@ export default function Admin() {
                           <Badge
                             className={cn(
                               "px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm",
-                              item.status === "retrieved"
+                              item.status === "retrieved" ||
+                                item.status === "verified" ||
+                                item.status === "resolved"
                                 ? "bg-emerald-500 text-white"
-                                : item.status === "verified"
-                                  ? "bg-blue-500 text-white"
-                                  : item.status === "resolved"
-                                    ? "bg-emerald-600 text-white"
-                                    : item.status === "donated"
-                                      ? "bg-amber-500 text-white"
-                                      : item.status === "pending_verification"
-                                        ? "bg-blue-100 text-blue-700"
-                                        : "bg-slate-200 text-slate-600"
+                                : item.status === "donated"
+                                ? "bg-amber-500 text-white"
+                                : item.status === "pending_verification"
+                                ? "bg-amber-100 text-amber-700"
+                                : item.status === "claimed"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-slate-200 text-slate-600"
                             )}
                           >
                             {item.status}
@@ -870,7 +924,10 @@ export default function Admin() {
 
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleStatusUpdate(item.id, "donated")
+                                  handleStatusUpdate(
+                                    item.id,
+                                    "donated"
+                                  )
                                 }
                                 className="rounded-xl py-3 cursor-pointer focus:bg-amber-50 focus:text-amber-600 font-bold text-xs"
                               >
@@ -881,7 +938,9 @@ export default function Admin() {
                               <div className="h-px bg-slate-100 my-2" />
 
                               <DropdownMenuItem
-                                onClick={() => handleDelete(item.id)}
+                                onClick={() =>
+                                  handleDelete(item.id)
+                                }
                                 className="rounded-xl py-3 cursor-pointer focus:bg-rose-50 focus:text-rose-600 font-bold text-xs text-rose-500"
                               >
                                 <Trash2 className="mr-3 h-4 w-4" />
@@ -895,9 +954,13 @@ export default function Admin() {
 
                     {filteredItems?.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={5} className="h-64 text-center">
+                        <TableCell
+                          colSpan={5}
+                          className="h-64 text-center"
+                        >
                           <div className="flex flex-col items-center justify-center text-slate-300">
                             <Search className="w-12 h-12 mb-4 opacity-20" />
+
                             <p className="font-black uppercase tracking-[0.2em] text-xs">
                               No matching records found
                             </p>
