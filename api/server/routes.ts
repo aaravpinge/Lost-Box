@@ -20,6 +20,10 @@ export async function registerRoutes(
   setupAuth(app);
   registerUploadRoutes(app);
 
+  // ============================================================
+  // ITEMS
+  // ============================================================
+
   app.get(api.items.list.path, async (req, res) => {
     const { type, search } = req.query;
 
@@ -40,14 +44,19 @@ export async function registerRoutes(
       });
     }
 
-    // redact privateFields before returning to public callers
+    // Never expose private verification information publicly.
     const out = { ...item } as any;
     delete out.privateFields;
+
     res.json(out);
   });
 
+  // ============================================================
+  // VERIFICATION QUESTIONS
+  // ============================================================
+
   // Return public verification questions for a found item.
-  // Never return the stored answers or answer hashes.
+  // Never return stored answers or answer hashes.
   app.get("/api/items/:id/verification-questions", async (req, res) => {
     try {
       const itemId = Number(req.params.id);
@@ -104,7 +113,11 @@ export async function registerRoutes(
     }
   });
 
-  // Submit a claim for a found item
+  // ============================================================
+  // CLAIM SUBMISSION
+  // ============================================================
+
+  // Submit a claim for a found item.
   app.post(api.items.claim.path, async (req, res) => {
     try {
       const itemId = Number(req.params.id);
@@ -129,6 +142,8 @@ export async function registerRoutes(
         });
       }
 
+      // An item can be claimed if it is reported, or if it is
+      // pending verification and has no existing claims.
       if (
         item.status !== "reported" &&
         !(
@@ -153,7 +168,7 @@ export async function registerRoutes(
           ? input.claimantEmail.trim()
           : undefined;
 
-      // Require the claimant's name.
+      // Require claimant name.
       if (!claimantName) {
         return res.status(400).json({
           message: "Please provide your name",
@@ -161,7 +176,7 @@ export async function registerRoutes(
         });
       }
 
-      // Require the claimant's email.
+      // Require claimant email.
       if (!claimantEmail) {
         return res.status(400).json({
           message: "Please provide your email",
@@ -202,8 +217,10 @@ export async function registerRoutes(
         });
       }
 
-      // If the item has stored verification questions,
-      // require verification before creating the claim.
+      // ========================================================
+      // OWNER VERIFICATION
+      // ========================================================
+
       const storedVerification =
         (item as any).privateFields?.verificationQuestions ?? [];
 
@@ -211,7 +228,7 @@ export async function registerRoutes(
         Array.isArray(storedVerification) &&
         storedVerification.length > 0
       ) {
-        // Require answers for every stored question.
+        // Every stored verification question must be answered.
         for (const sq of storedVerification) {
           const storedQ =
             typeof sq.q === "string" ? sq.q.trim() : "";
@@ -230,17 +247,20 @@ export async function registerRoutes(
             });
           }
 
+          // IMPORTANT:
+          // A wrong answer immediately stops the claim.
+          // No claim is created.
+          // Item status is not changed.
           if (!verifyAnswer(provided.a, sq.aHash)) {
-            // Wrong answer: do not create a claim
-            // and do not change item status.
             return res.status(400).json({
               message: "Verification failed",
             });
           }
         }
 
-        // All verification answers matched.
-        // Create a pending claim without storing the answers.
+        // All answers passed verification.
+        // Create a pending claim.
+        // Do NOT store the private answers.
         const claim = await storage.createClaim(
           itemId,
           claimantName,
@@ -249,7 +269,7 @@ export async function registerRoutes(
           0
         );
 
-        // Keep the item pending until staff review.
+        // Keep the item pending until an admin reviews the claim.
         await storage.updateItemStatus(
           itemId,
           "pending_verification"
@@ -261,24 +281,26 @@ export async function registerRoutes(
           message:
             "Claim submitted successfully. Staff will review your claim.",
         });
-      } else {
-        // No stored verification questions:
-        // preserve existing fallback behavior.
-        const claim = await storage.createClaim(
-          itemId,
-          claimantName,
-          claimantEmail,
-          answers,
-          0
-        );
-
-        return res.status(201).json({
-          claimId: claim.id,
-          matchScore: 0,
-          message:
-            "Claim submitted successfully. Staff will review your claim.",
-        });
       }
+
+      // ========================================================
+      // FALLBACK WHEN NO VERIFICATION QUESTIONS EXIST
+      // ========================================================
+
+      const claim = await storage.createClaim(
+        itemId,
+        claimantName,
+        claimantEmail,
+        answers,
+        0
+      );
+
+      return res.status(201).json({
+        claimId: claim.id,
+        matchScore: 0,
+        message:
+          "Claim submitted successfully. Staff will review your claim.",
+      });
     } catch (err: any) {
       log(
         `POST /api/items/:id/claim error: ${err.message}`
@@ -302,8 +324,90 @@ export async function registerRoutes(
   // ADMIN CLAIM REVIEW
   // ============================================================
 
-  // Get claims for a specific item.
-  // Only authenticated admins may access claim information.
+  // ------------------------------------------------------------
+  // GET ALL PENDING CLAIMS
+  // ------------------------------------------------------------
+  //
+  // This is the endpoint used by the Admin dashboard:
+  //
+  // GET /api/claims
+  //
+  // Only authenticated administrators can access this endpoint.
+  //
+  app.get("/api/claims", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({
+          message: "Unauthorized",
+        });
+      }
+
+      const user = req.user as any;
+
+      if (user?.isAdmin !== "true") {
+        return res.status(403).json({
+          message: "Admin access required",
+        });
+      }
+
+      // Get all found items.
+      const foundItems = await storage.getItems("found");
+
+      // Look for pending claims associated with those items.
+      const pendingClaims: any[] = [];
+
+      for (const item of foundItems) {
+        const claims = await storage.getClaimsForItem(item.id);
+
+        for (const claim of claims) {
+          if (claim.status === "pending") {
+            pendingClaims.push({
+              ...claim,
+
+              // Include safe item information for the admin UI.
+              // privateFields are never included.
+              item: {
+                id: item.id,
+                type: item.type,
+                description: item.description,
+                category: item.category,
+                location: item.location,
+                dateReported: item.dateReported,
+                dateFound: item.dateFound,
+                status: item.status,
+                publicFields: item.publicFields,
+              },
+            });
+          }
+        }
+      }
+
+      // Newest claims first.
+      pendingClaims.sort((a, b) => {
+        const aDate = new Date(a.created_at || 0).getTime();
+        const bDate = new Date(b.created_at || 0).getTime();
+
+        return bDate - aDate;
+      });
+
+      return res.json(pendingClaims);
+    } catch (err: any) {
+      log(
+        `GET /api/claims error: ${
+          err?.message || err
+        }`
+      );
+
+      return res.status(500).json({
+        message: "Could not load pending claims",
+      });
+    }
+  });
+
+  // ------------------------------------------------------------
+  // GET CLAIMS FOR ONE ITEM
+  // ------------------------------------------------------------
+
   app.get("/api/items/:id/claims", async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
@@ -352,9 +456,18 @@ export async function registerRoutes(
     }
   });
 
-  // Review a pending claim.
-  // Approve -> item becomes claimed.
-  // Reject -> item becomes available for another claim.
+  // ------------------------------------------------------------
+  // REVIEW CLAIM
+  // ------------------------------------------------------------
+
+  // Approve:
+  //   claim -> accepted
+  //   item  -> claimed
+  //
+  // Reject:
+  //   claim -> rejected
+  //   item  -> pending_verification
+  //
   app.post("/api/claims/:id/review", async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
@@ -424,6 +537,10 @@ export async function registerRoutes(
     }
   });
 
+  // ============================================================
+  // CREATE ITEM
+  // ============================================================
+
   app.post(api.items.create.path, async (req, res) => {
     try {
       log(
@@ -442,7 +559,7 @@ export async function registerRoutes(
         `POST /api/items - Database insert successful: ID ${item.id}`
       );
 
-      // Trigger Intelligent Auto-Matching.
+      // Intelligent auto-matching.
       try {
         const matches = await storage.findPotentialMatches(item);
 
@@ -455,7 +572,7 @@ export async function registerRoutes(
         log(`Matching logic error (continuing): ${matchErr}`);
       }
 
-      // Fire and forget email notification.
+      // Fire-and-forget email notification.
       sendItemNotification(item).catch((err) =>
         log(`Notification Error: ${err}`)
       );
@@ -484,10 +601,19 @@ export async function registerRoutes(
     }
   });
 
+  // ============================================================
+  // STATS
+  // ============================================================
+
   app.get("/api/stats", async (req, res) => {
     const stats = await storage.getStats();
+
     res.json(stats);
   });
+
+  // ============================================================
+  // UPDATE ITEM STATUS
+  // ============================================================
 
   app.patch(api.items.updateStatus.path, async (req, res) => {
     try {
@@ -513,6 +639,10 @@ export async function registerRoutes(
     }
   });
 
+  // ============================================================
+  // DELETE ITEM
+  // ============================================================
+
   app.delete(api.items.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({
@@ -525,8 +655,10 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // Seed admin user
-  // Seed admin user
+  // ============================================================
+  // SEED ADMIN USER
+  // ============================================================
+
   try {
     const adminEmail = "admin@bwcampus.com";
 
@@ -570,7 +702,10 @@ export async function registerRoutes(
     );
   }
 
-  // Setup Smart Expiry & Donation Alerts (Daily check)
+  // ============================================================
+  // SMART EXPIRY / DONATION ALERTS
+  // ============================================================
+
   if (!process.env.VERCEL) {
     setInterval(async () => {
       try {
@@ -586,7 +721,7 @@ export async function registerRoutes(
     }, 1000 * 60 * 60 * 24);
   }
 
-  // Initial check on startup
+  // Initial expiry check on startup.
   storage
     .getExpiredItems(30)
     .then((items) => {
@@ -598,11 +733,15 @@ export async function registerRoutes(
       console.error("Initial Expiry Check Error:", err)
     );
 
-  // Health Check Endpoint
+  // ============================================================
+  // HEALTH CHECK
+  // ============================================================
+
   app.get("/api/health", async (req, res) => {
     try {
       const { items } =
         await import("../../shared/schema.js");
+
       const { db } = await import("./db.js");
 
       const result = await db
