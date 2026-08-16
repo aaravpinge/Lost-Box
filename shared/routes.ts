@@ -1,10 +1,5 @@
-import { z } from "zod";
-import {
-  insertItemSchema,
-  items,
-  users,
-  claims,
-} from "./schema.js";
+import { z } from 'zod';
+import { insertItemSchema, items, users } from './schema.js';
 
 export const errorSchemas = {
   validation: z.object({
@@ -19,33 +14,25 @@ export const errorSchemas = {
   internal: z.object({
     message: z.string(),
   }),
-
-  unauthorized: z.object({
-    message: z.string(),
-  }),
 };
 
 export const api = {
   items: {
     list: {
-      method: "GET" as const,
-      path: "/api/items",
-      input: z
-        .object({
-          type: z.enum(["lost", "found"]).optional(),
-          search: z.string().optional(),
-        })
-        .optional(),
-
+      method: 'GET' as const,
+      path: '/api/items',
+      input: z.object({
+        type: z.enum(['lost', 'found']).optional(),
+        search: z.string().optional(),
+      }).optional(),
       responses: {
         200: z.array(z.custom<typeof items.$inferSelect>()),
       },
     },
 
     get: {
-      method: "GET" as const,
-      path: "/api/items/:id",
-
+      method: 'GET' as const,
+      path: '/api/items/:id',
       responses: {
         200: z.custom<typeof items.$inferSelect>(),
         404: errorSchemas.notFound,
@@ -53,11 +40,9 @@ export const api = {
     },
 
     create: {
-      method: "POST" as const,
-      path: "/api/items",
-
+      method: 'POST' as const,
+      path: '/api/items',
       input: insertItemSchema,
-
       responses: {
         201: z.custom<typeof items.$inferSelect>(),
         400: errorSchemas.validation,
@@ -65,21 +50,18 @@ export const api = {
     },
 
     updateStatus: {
-      method: "PATCH" as const,
-      path: "/api/items/:id/status",
-
+      method: 'PATCH' as const,
+      path: '/api/items/:id/status',
       input: z.object({
-        status: z
-          .enum([
-            "reported",
-            "retrieved",
-            "donated",
-            "claimed",
-            "pending_verification",
-            "verified",
-            "resolved",
-          ])
-          .optional(),
+        status: z.enum([
+          'reported',
+          'retrieved',
+          'donated',
+          'claimed',
+          'pending_verification',
+          'verified',
+          'resolved',
+        ]).optional(),
 
         claimedBy: z.string().optional(),
       }),
@@ -91,27 +73,21 @@ export const api = {
     },
 
     // Submit a claim for a found item.
-    // Verification is enforced by the server before
-    // this endpoint creates a claim.
     claim: {
-      method: "POST" as const,
-      path: "/api/items/:id/claim",
+      method: 'POST' as const,
+      path: '/api/items/:id/claim',
 
-      input: z
-        .object({
-          claimantName: z.string().optional(),
-          claimantEmail: z.string().optional(),
+      input: z.object({
+        claimantName: z.string().optional(),
+        claimantEmail: z.string().optional(),
 
-          answers: z
-            .array(
-              z.object({
-                q: z.string(),
-                a: z.string(),
-              })
-            )
-            .optional(),
-        })
-        .optional(),
+        answers: z.array(
+          z.object({
+            q: z.string(),
+            a: z.string(),
+          })
+        ).optional(),
+      }).optional(),
 
       responses: {
         201: z.object({
@@ -127,76 +103,67 @@ export const api = {
     },
 
     delete: {
-      method: "DELETE" as const,
-      path: "/api/items/:id",
+      method: 'DELETE' as const,
+      path: '/api/items/:id',
 
       responses: {
         204: z.void(),
         404: errorSchemas.notFound,
-        401: errorSchemas.unauthorized,
       },
     },
   },
 
-  // ---------------------------------------------------------
-  // CLAIM MANAGEMENT
-  // ---------------------------------------------------------
-
+  // Claims / verification workflow.
   claims: {
-    // Get every claim for an item.
-    // Used by the admin dashboard to see who actually submitted
-    // a claim and the current claim status.
-    forItem: {
-      method: "GET" as const,
-      path: "/api/items/:id/claims",
+    list: {
+      method: 'GET' as const,
+      path: '/api/claims',
 
       responses: {
-        200: z.array(z.custom<typeof claims.$inferSelect>()),
-        401: errorSchemas.unauthorized,
+        200: z.array(z.any()),
+        401: errorSchemas.validation,
+        403: errorSchemas.validation,
+      },
+    },
+
+    byItem: {
+      method: 'GET' as const,
+      path: '/api/items/:id/claims',
+
+      responses: {
+        200: z.array(z.any()),
+        401: errorSchemas.validation,
+        403: errorSchemas.validation,
         404: errorSchemas.notFound,
       },
     },
 
-    // Get one claim by ID.
     get: {
-      method: "GET" as const,
-      path: "/api/claims/:id",
+      method: 'GET' as const,
+      path: '/api/claims/:id',
 
       responses: {
-        200: z.custom<typeof claims.$inferSelect>(),
-        401: errorSchemas.unauthorized,
+        200: z.any(),
+        401: errorSchemas.validation,
+        403: errorSchemas.validation,
         404: errorSchemas.notFound,
       },
     },
 
-    // Staff/admin review of a claim.
     review: {
-      method: "POST" as const,
-      path: "/api/claims/:id/review",
+      method: 'POST' as const,
+      path: '/api/claims/:id/review',
 
       input: z.object({
-        action: z.enum(["accept", "reject"]),
+        action: z.enum(['accept', 'reject']),
         notes: z.string().optional(),
-
-        // When accepting a claim, this can be used to move
-        // the item into its final status.
-        setStatus: z
-          .enum([
-            "reported",
-            "retrieved",
-            "donated",
-            "claimed",
-            "pending_verification",
-            "verified",
-            "resolved",
-          ])
-          .optional(),
       }),
 
       responses: {
-        200: z.custom<typeof claims.$inferSelect>(),
+        200: z.any(),
         400: errorSchemas.validation,
-        401: errorSchemas.unauthorized,
+        401: errorSchemas.validation,
+        403: errorSchemas.validation,
         404: errorSchemas.notFound,
       },
     },
@@ -204,15 +171,11 @@ export const api = {
 
   user: {
     me: {
-      method: "GET" as const,
-      path: "/api/user/me",
+      method: 'GET' as const,
+      path: '/api/user/me',
 
       responses: {
-        200: z
-          .custom<typeof users.$inferSelect>()
-          .nullable(),
-
-        401: z.string(),
+        200: z.custom<typeof users.$inferSelect>().nullable(),
       },
     },
   },
@@ -223,15 +186,17 @@ export function buildUrl(
   params?: Record<string, string | number>
 ): string {
   // If we are on Firebase Hosting (static), proxy requests
-  // to the backend tunnel.
+  // to a stable local tunnel.
   const isFirebase =
-    typeof window !== "undefined" &&
-    (window.location.hostname.includes("web.app") ||
-      window.location.hostname.includes("firebaseapp.com"));
+    typeof window !== 'undefined' &&
+    (
+      window.location.hostname.includes('web.app') ||
+      window.location.hostname.includes('firebaseapp.com')
+    );
 
   const baseUrl = isFirebase
-    ? "https://8e2fc305eb48e78e-172-250-5-58.serveousercontent.com"
-    : "";
+    ? 'https://8e2fc305eb48e78e-172-250-5-58.serveousercontent.com'
+    : '';
 
   let url = baseUrl + path;
 
