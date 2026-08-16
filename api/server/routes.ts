@@ -382,13 +382,17 @@ export async function registerRoutes(
         });
       }
 
-      // Get all found items.
-      const foundItems = await storage.getItems("found");
+      // Get items that may have claims requiring admin review.
+      // Claims can move an item from "found" to "pending_verification".
+      const reviewItems = [
+        ...(await storage.getItems("found")),
+        ...(await storage.getItems("pending_verification")),
+      ];
 
       // Look for pending claims associated with those items.
       const pendingClaims: any[] = [];
 
-      for (const item of foundItems) {
+      for (const item of reviewItems) {
         const claims = await storage.getClaimsForItem(item.id);
 
         for (const claim of claims) {
