@@ -180,7 +180,8 @@ export default function Admin() {
   const pendingClaims = claims.filter(
     (claim) =>
       claim.status === "pending" ||
-      claim.status === "needs_review"
+      claim.status === "needs_review" ||
+      claim.status === "manual_verification"
   );
 
   /*
