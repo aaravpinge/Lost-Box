@@ -146,6 +146,22 @@ export async function registerRoutes(
           ? input.claimantEmail.trim()
           : undefined;
 
+      // Require the claimant's name.
+      if (!claimantName) {
+        return res.status(400).json({
+          message: "Please provide your name",
+          field: "claimantName",
+        });
+      }
+
+      // Require the claimant's email.
+      if (!claimantEmail) {
+        return res.status(400).json({
+          message: "Please provide your email",
+          field: "claimantEmail",
+        });
+      }
+
       const answers = Array.isArray(input?.answers)
         ? input.answers
             .filter(
